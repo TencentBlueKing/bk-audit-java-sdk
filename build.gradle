@@ -1,0 +1,81 @@
+plugins {
+    id "io.spring.dependency-management" version "1.1.0"
+    id "org.springframework.boot" version "2.6.13" apply false
+    id "java-library"
+    id "idea"
+    id "maven-publish"
+}
+
+description = "Blueking Audit Java SDK Build"
+
+ext {
+    springVersion = "5.3.25"
+    springBootVersion = "2.6.13"
+    aspectjVersion = "1.9.7"
+    jacksonVersion = "2.13.4"
+    slf4jVersion = "1.7.30"
+    commonsLang3Version = "3.12.0"
+    commonsCollectionsVersion = "3.2.2"
+    commonsCollections4Version = "4.4"
+    servletVersion = "4.0.1"
+    junitVersion = "5.8.2"
+    assertjVersion = "3.21.0"
+    lombokVersion = "1.18.10"
+}
+
+allprojects {
+
+    group = "com.tencent.bk.sdk"
+    version = "1.0.0"
+
+    apply plugin: "idea"
+    apply plugin: "eclipse"
+    apply plugin: "java-library"
+    apply plugin: "io.spring.dependency-management"
+//    apply plugin: "maven-publish"
+
+    // 版本管理
+    dependencyManagement {
+        dependencies {
+            dependency("org.springframework.boot:spring-boot-autoconfigure:$springBootVersion")
+            dependency("org.springframework.boot:spring-boot-configuration-processor:$springBootVersion")
+            dependency("org.springframework:spring-web:$springVersion")
+            dependencySet(group: "org.aspectj", version: "$aspectjVersion") {
+                entry "aspectjrt"
+                entry "aspectjweaver"
+            }
+            dependencySet(group: "com.fasterxml.jackson.core", version: "$jacksonVersion") {
+                entry "jackson-core"
+                entry "jackson-databind"
+                entry "jackson-annotations"
+            }
+            dependency("com.fasterxml.jackson.module:jackson-module-jsonSchema:$jacksonVersion")
+            dependency("org.slf4j:slf4j-api:$slf4jVersion")
+            dependency("org.apache.commons:commons-lang3:$commonsLang3Version")
+            dependency("commons-collections:commons-collections:$commonsCollectionsVersion")
+            dependency("org.apache.commons:commons-collections4:$commonsCollections4Version")
+            dependency("javax.servlet:javax.servlet-api:$servletVersion")
+            dependencySet(group: "org.junit.jupiter", version: "$junitVersion") {
+                entry "junit-jupiter-api"
+                entry "junit-jupiter-engine"
+            }
+            dependency("org.assertj:assertj-core:$assertjVersion")
+            dependency("org.projectlombok:lombok:$lombokVersion")
+        }
+    }
+
+    test {
+        useJUnitPlatform()
+        testLogging {
+            events 'PASSED', 'FAILED', 'SKIPPED'
+        }
+        include '**/*Test.class'
+    }
+
+    tasks.withType(JavaCompile) {
+        options.encoding = "UTF-8"
+    }
+    tasks.withType(Javadoc) {
+        options.encoding("UTF-8")
+    }
+}

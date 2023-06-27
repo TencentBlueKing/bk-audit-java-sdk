@@ -1,0 +1,24 @@
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+
+    def mavenRepoUrl = providers.gradleProperty('MAVEN_REPO_URL').get()
+
+    repositories {
+        mavenLocal()
+        if (mavenRepoUrl != null) {
+            println "Add private maven repo $mavenRepoUrl"
+            maven { url mavenRepoUrl }
+        }
+        mavenCentral()
+    }
+}
+rootProject.name = "bk-audit-java-sdk"
+include(":bk-audit-java-sdk")
+include(":spring-boot-bk-audit-starter")
