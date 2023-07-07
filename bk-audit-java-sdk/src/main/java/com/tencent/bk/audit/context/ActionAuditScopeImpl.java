@@ -1,4 +1,4 @@
-package com.tencent.bk.audit.model;
+package com.tencent.bk.audit.context;
 
 import lombok.extern.slf4j.Slf4j;
 

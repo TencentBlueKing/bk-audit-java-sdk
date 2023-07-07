@@ -1,4 +1,4 @@
-package com.tencent.bk.audit.model;
+package com.tencent.bk.audit.context;
 
 import com.tencent.bk.audit.AuditEventBuilder;
 
@@ -116,6 +116,14 @@ public class ActionAuditContextBuilder {
 
     public ActionAuditContextBuilder setAttributes(Map<String, Object> attributes) {
         this.attributes = attributes;
+        return this;
+    }
+
+    public ActionAuditContextBuilder addAttribute(String attrName, Object attrValue) {
+        if (this.attributes == null) {
+            this.attributes = new HashMap<>();
+        }
+        this.attributes.put(attrName, attrValue);
         return this;
     }
 

@@ -21,6 +21,7 @@ ext {
     junitVersion = "5.8.2"
     assertjVersion = "3.21.0"
     lombokVersion = "1.18.10"
+    mockitoVersion = "4.0.0"
 }
 
 allprojects {
@@ -61,6 +62,7 @@ allprojects {
             }
             dependency("org.assertj:assertj-core:$assertjVersion")
             dependency("org.projectlombok:lombok:$lombokVersion")
+            dependency("org.mockito:mockito-core:$mockitoVersion")
         }
     }
 

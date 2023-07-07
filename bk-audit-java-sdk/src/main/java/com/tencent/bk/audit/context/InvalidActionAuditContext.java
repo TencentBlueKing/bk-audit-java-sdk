@@ -1,8 +1,13 @@
-package com.tencent.bk.audit.model;
+package com.tencent.bk.audit.context;
+
+import com.tencent.bk.audit.model.AuditEvent;
 
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 非法的操作审计上下文（没有任何实际操作)
+ */
 public class InvalidActionAuditContext implements ActionAuditContext {
     @Override
     public ActionAuditScope makeCurrent() {

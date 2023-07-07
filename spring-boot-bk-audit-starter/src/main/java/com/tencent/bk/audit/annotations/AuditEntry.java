@@ -15,7 +15,7 @@ public @interface AuditEntry {
     String actionId() default "";
 
     /**
-     * 审计子操作ID
+     * 审计子操作ID。比如删除作业模版操作，那么后台也会触发作业执行方案的删除（子操作）。如果需要记录子操作，需要设置 subActionIds
      */
     String[] subActionIds() default {};
 }

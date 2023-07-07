@@ -14,7 +14,7 @@ import static com.tencent.bk.audit.constants.Constants.RESULT_CODE_SUCCESS;
 import static com.tencent.bk.audit.constants.Constants.RESULT_SUCCESS_DESC;
 
 /**
- * 审计事件
+ * 审计事件标准模型，用于定义上报给审计中心的事件数据
  */
 @Data
 public class AuditEvent {

@@ -1,17 +1,18 @@
-package com.tencent.bk.audit.model;
+package com.tencent.bk.audit.context;
 
-import com.tencent.bk.audit.ActionCallable;
-import com.tencent.bk.audit.ActionRunnable;
+import com.tencent.bk.audit.AuditCallable;
+import com.tencent.bk.audit.AuditRunnable;
+import com.tencent.bk.audit.model.AuditEvent;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * 操作审计上下文实现
+ * 操作审计上下文
  */
 public interface ActionAuditContext {
     /**
-     * 非法的操作审计上下文，用于当前操作审计上下文不存在时返回这个实例（避免返回null导致系统异常)
+     * 非法的操作审计上下文
      */
     ActionAuditContext INVALID = new InvalidActionAuditContext();
 
@@ -38,52 +39,31 @@ public interface ActionAuditContext {
      */
     void end();
 
-    default <T> ActionCallable<T> wrapActionCallable(ActionCallable<T> callable) {
+    default <T> AuditCallable<T> wrapActionCallable(AuditCallable<T> callable) {
         return () -> {
-            ActionAuditScope scope = null;
-            ActionAuditContext current = null;
-            try {
-                scope = makeCurrent();
-                current = current();
-            } catch (Throwable ignore) {
-                // 保证业务代码正常执行，忽略所有审计错误
-            }
+            ActionAuditScope scope = makeCurrent();
             try {
                 return callable.call();
             } finally {
-                safelyEndActionAuditContext(scope, current);
+                safelyEndActionAuditContext(scope);
             }
         };
     }
 
-    default void safelyEndActionAuditContext(ActionAuditScope scope,
-                                             ActionAuditContext current) {
-        try {
-            if (current != null) {
-                current.end();
-            }
-            if (scope != null) {
-                scope.close();
-            }
-        } catch (Throwable ignore) {
-            // 保证业务代码正常执行，忽略所有审计错误
+    default void safelyEndActionAuditContext(ActionAuditScope scope) {
+        end();
+        if (scope != null) {
+            scope.close();
         }
     }
 
-    default ActionRunnable wrapActionRunnable(ActionRunnable actionRunnable) {
+    default AuditRunnable wrapActionRunnable(AuditRunnable auditRunnable) {
         return () -> {
-            ActionAuditScope scope = null;
-            ActionAuditContext current = null;
+            ActionAuditScope scope = makeCurrent();
             try {
-                scope = makeCurrent();
-                current = current();
-            } catch (Throwable ignore) {
-                // 保证业务代码正常执行，忽略所有审计错误
-            }
-            try {
-                actionRunnable.run();
+                auditRunnable.run();
             } finally {
-                safelyEndActionAuditContext(scope, current);
+                safelyEndActionAuditContext(scope);
             }
         };
     }

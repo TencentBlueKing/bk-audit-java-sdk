@@ -1,6 +1,9 @@
-package com.tencent.bk.audit.model;
+package com.tencent.bk.audit.context;
 
-import com.tencent.bk.audit.GlobalAuditRegistry;
+import com.tencent.bk.audit.constants.AccessTypeEnum;
+import com.tencent.bk.audit.constants.UserIdentifyTypeEnum;
+import com.tencent.bk.audit.model.AuditEvent;
+import com.tencent.bk.audit.model.AuditHttpRequest;
 
 import java.util.List;
 
@@ -9,7 +12,7 @@ import java.util.List;
  */
 public interface AuditContext {
     /**
-     * 非法的审计上下文，用于当前审计上下文不存在时返回这个实例（避免返回null导致系统异常)
+     * 非法的审计上下文
      */
     AuditContext INVALID = new InvalidAuditContext();
 
@@ -23,7 +26,8 @@ public interface AuditContext {
      * @return 当前审计上下文
      */
     static AuditContext current() {
-        return GlobalAuditRegistry.get().currentAuditContext();
+        AuditContext auditContext = LazyAuditContextHolder.get().current();
+        return auditContext != null ? auditContext : AuditContext.INVALID;
     }
 
     /**
@@ -48,29 +52,55 @@ public interface AuditContext {
     ActionAuditContext currentActionAuditContext();
 
     /**
-     * 增加操作审计上下文
+     * 新增操作审计上下文
      *
      * @param actionAuditContext 操作审计上下文
      */
     void addActionAuditContext(ActionAuditContext actionAuditContext);
 
     /**
-     * 结束审计上下文；在所有的操作结束后调用
+     * 结束审计上下文
      */
     void end();
 
     /**
      * 操作错误时记录错误信息
      *
-     * @param resultCode 操作结果
-     * @param resultDesc 操作结果描述
+     * @param resultCode 操作结果，对应审计事件中的 result_code
+     * @param resultDesc 操作结果描述，对应审计事件中的 result_content
      */
     void error(int resultCode, String resultDesc);
 
     /**
-     * 获取审计事件
+     * 获取上下文包含的审计事件
      *
      * @return 审计事件
      */
     List<AuditEvent> getEvents();
+
+    String getRequestId();
+
+    String getUsername();
+
+    UserIdentifyTypeEnum getUserIdentifyType();
+
+    String getUserIdentifyTenantId();
+
+    Long getStartTime();
+
+    Long getEndTime();
+
+    String getBkAppCode();
+
+    AccessTypeEnum getAccessType();
+
+    String getAccessSourceIp();
+
+    String getAccessUserAgent();
+
+    String getActionId();
+
+    List<String> getSubActionIds();
+
+    AuditHttpRequest getHttpRequest();
 }

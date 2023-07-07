@@ -1,6 +1,6 @@
 package com.tencent.bk.audit;
 
 @FunctionalInterface
-public interface ActionRunnable {
+public interface AuditRunnable {
     void run();
 }

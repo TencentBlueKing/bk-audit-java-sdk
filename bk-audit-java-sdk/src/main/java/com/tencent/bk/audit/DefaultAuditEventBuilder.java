@@ -2,11 +2,12 @@ package com.tencent.bk.audit;
 
 import com.tencent.bk.audit.constants.AuditAttributeNames;
 import com.tencent.bk.audit.constants.Constants;
-import com.tencent.bk.audit.model.ActionAuditContext;
+import com.tencent.bk.audit.context.ActionAuditContext;
 import com.tencent.bk.audit.model.AuditEvent;
 import com.tencent.bk.audit.utils.EventIdGenerator;
 import com.tencent.bk.audit.utils.VariableResolver;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 默认的审计事件Builder
+ * 默认的审计事件生成Builder
  */
 public class DefaultAuditEventBuilder implements AuditEventBuilder {
     private final ActionAuditContext actionAuditContext;
@@ -27,7 +28,6 @@ public class DefaultAuditEventBuilder implements AuditEventBuilder {
     @Override
     public List<AuditEvent> build() {
         List<AuditEvent> events = new ArrayList<>();
-        Map<String, Object> eventAttributes = new HashMap<>(actionAuditContext.getAttributes());
 
         List<String> instanceIdList = actionAuditContext.getInstanceIdList();
         if (StringUtils.isNotBlank(actionAuditContext.getResourceType())) {
@@ -41,20 +41,33 @@ public class DefaultAuditEventBuilder implements AuditEventBuilder {
                     String instanceName = safeGetElement(instanceNameList, index);
                     Object originInstance = safeGetElement(originInstanceList, index);
                     Object instance = safeGetElement(instanceList, index);
-                    eventAttributes.put(AuditAttributeNames.INSTANCE_ID, instanceId);
-                    eventAttributes.put(AuditAttributeNames.INSTANCE_NAME, instanceName);
+                    Map<String, Object> attributes = addInstanceAttributes(
+                            actionAuditContext.getAttributes(), instanceId, instanceName);
                     AuditEvent auditEvent = buildAuditEvent(instanceId, instanceName, originInstance, instance,
-                            eventAttributes);
+                            attributes);
                     events.add(auditEvent);
                 }
             }
         } else {
             AuditEvent auditEvent = buildAuditEvent(null, null, null, null,
-                    eventAttributes);
+                    actionAuditContext.getAttributes());
             events.add(auditEvent);
         }
 
         return events;
+    }
+
+    private Map<String, Object> addInstanceAttributes(Map<String, Object> auditContextAttributes,
+                                                      String instanceId,
+                                                      String instanceName) {
+        Map<String, Object> attributeMap = new HashMap<>();
+        attributeMap.put(AuditAttributeNames.INSTANCE_ID, instanceId);
+        attributeMap.put(AuditAttributeNames.INSTANCE_NAME, instanceName);
+
+        if (MapUtils.isNotEmpty(actionAuditContext.getAttributes())) {
+            attributeMap.putAll(actionAuditContext.getAttributes());
+        }
+        return attributeMap;
     }
 
     protected <T> T safeGetElement(List<T> list, int index) {
@@ -100,6 +113,9 @@ public class DefaultAuditEventBuilder implements AuditEventBuilder {
      * @return 解析之后的值
      */
     protected String resolveAttributes(String contentTemplate, Map<String, Object> eventAttributes) {
+        if (MapUtils.isEmpty(eventAttributes)) {
+            return contentTemplate;
+        }
         Map<String, String> vars = new HashMap<>();
         eventAttributes.forEach((k, v) -> vars.put(k, v == null ? "" : v.toString()));
         return VariableResolver.resolveVariables(contentTemplate, vars);

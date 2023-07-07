@@ -3,7 +3,7 @@ package com.tencent.bk.audit.annotations;
 import java.lang.annotation.*;
 
 /**
- * 审计事件 - 属性注解
+ * 自定义审计上下文属性
  */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)

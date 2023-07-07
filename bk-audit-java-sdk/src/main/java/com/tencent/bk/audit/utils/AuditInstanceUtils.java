@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * 审计资源实例处理工具类
+ */
 public class AuditInstanceUtils {
     /**
      * @param instances 资源实例列表

@@ -1,7 +1,8 @@
-package com.tencent.bk.audit.model;
+package com.tencent.bk.audit.context;
 
 import com.tencent.bk.audit.constants.AccessTypeEnum;
 import com.tencent.bk.audit.constants.UserIdentifyTypeEnum;
+import com.tencent.bk.audit.model.AuditHttpRequest;
 
 import java.util.List;
 
@@ -28,6 +29,9 @@ public class AuditContextBuilder {
      */
     private final String actionId;
 
+    /**
+     * 审计操作 Http 请求
+     */
     private AuditHttpRequest httpRequest;
 
     /**
@@ -96,6 +100,6 @@ public class AuditContextBuilder {
 
     public AuditContext build() {
         return new SdkAuditContext(actionId, requestId, username, userIdentifyType, userIdentifyTenantId,
-            bkAppCode, accessType, accessSourceIp, accessUserAgent, httpRequest, subActionIds);
+                bkAppCode, accessType, accessSourceIp, accessUserAgent, httpRequest, subActionIds);
     }
 }

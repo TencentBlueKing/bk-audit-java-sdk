@@ -1,7 +1,9 @@
-package com.tencent.bk.audit.model;
+package com.tencent.bk.audit.context;
 
 import com.tencent.bk.audit.AuditEventBuilder;
 import com.tencent.bk.audit.DefaultAuditEventBuilder;
+import com.tencent.bk.audit.exception.AuditException;
+import com.tencent.bk.audit.model.AuditEvent;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -116,6 +118,7 @@ public class SdkActionAuditContext implements ActionAuditContext {
             events.addAll(eventBuilder.build());
         } catch (Throwable e) {
             log.error("ActionAuditContext - build event caught error", e);
+            throw new AuditException("Build audit event error", e);
         }
     }
 
@@ -231,30 +234,37 @@ public class SdkActionAuditContext implements ActionAuditContext {
                                               String instanceName,
                                               Object originInstance,
                                               Object instance) {
-        if (instanceId != null) {
-            if (instanceIdList == null) {
-                instanceIdList = new ArrayList<>();
-            }
-            instanceIdList.add(instanceId);
-        }
-        if (instanceName != null) {
-            if (instanceNameList == null) {
-                instanceNameList = new ArrayList<>();
-            }
-            instanceNameList.add(instanceName);
-        }
-        if (originInstance != null) {
-            if (originInstanceList == null) {
-                originInstanceList = new ArrayList<>();
-            }
-            originInstanceList.add(originInstance);
-        }
+        addInstanceToList(instanceId, instanceIdList);
+        addInstanceToList(instanceName, instanceNameList);
+        addInstanceToList(originInstance, originInstanceList);
+        addInstanceToList(instance, instanceList);
+        return this;
+    }
+
+    private <E> void addInstanceToList(E instance, List<E> instanceList) {
         if (instance != null) {
             if (instanceList == null) {
                 instanceList = new ArrayList<>();
             }
             instanceList.add(instance);
         }
-        return this;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", SdkActionAuditContext.class.getSimpleName() + "[", "]")
+                .add("actionId='" + actionId + "'")
+                .add("startTime=" + startTime)
+                .add("endTime=" + endTime)
+                .add("resourceType='" + resourceType + "'")
+                .add("instanceIdList=" + instanceIdList)
+                .add("instanceNameList=" + instanceNameList)
+                .add("originInstanceList=" + originInstanceList)
+                .add("instanceList=" + instanceList)
+                .add("content='" + content + "'")
+                .add("eventBuilderClass=" + eventBuilderClass)
+                .add("attributes=" + attributes)
+                .add("events=" + events)
+                .toString();
     }
 }

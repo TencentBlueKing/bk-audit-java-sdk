@@ -3,7 +3,7 @@ package com.tencent.bk.audit.constants;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * 操作人账号类型
+ * 操作账号类型
  */
 public enum UserIdentifyTypeEnum {
     /**

@@ -7,7 +7,7 @@ import java.util.Objects;
 /**
  * 审计事件KEY
  * <p>
- * 在一个审计上下文中(AuditContent,对应一次用户操作), 操作+资源类型+资源id 即可唯一确定审计事件
+ * 在一个审计上下文中, 操作+资源类型+资源id 即可唯一确定审计事件
  */
 public class AuditEventKey {
     private final String actionId;

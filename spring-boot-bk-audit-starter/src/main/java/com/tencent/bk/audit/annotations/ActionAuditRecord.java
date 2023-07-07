@@ -20,7 +20,7 @@ public @interface ActionAuditRecord {
     String actionId() default "";
 
     /**
-     * 事件描述
+     * 事件描述。支持引用 attributes 中定义的属性
      */
     String content() default "";
 

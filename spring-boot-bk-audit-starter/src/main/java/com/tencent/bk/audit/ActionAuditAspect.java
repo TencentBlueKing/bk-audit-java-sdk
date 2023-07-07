@@ -2,8 +2,8 @@ package com.tencent.bk.audit;
 
 import com.tencent.bk.audit.annotations.ActionAuditRecord;
 import com.tencent.bk.audit.annotations.AuditAttribute;
-import com.tencent.bk.audit.model.ActionAuditContext;
-import com.tencent.bk.audit.model.ActionAuditScope;
+import com.tencent.bk.audit.context.ActionAuditContext;
+import com.tencent.bk.audit.context.ActionAuditScope;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @Aspect
 @Slf4j
 public class ActionAuditAspect {
-    private final Audit audit;
+    private final AuditClient auditClient;
 
     /**
      * 参数名发现(线程安全)
@@ -41,8 +41,8 @@ public class ActionAuditAspect {
      */
     private final SpelExpressionParser spelExpressionParser = new SpelExpressionParser();
 
-    public ActionAuditAspect(Audit audit) {
-        this.audit = audit;
+    public ActionAuditAspect(AuditClient auditClient) {
+        this.auditClient = auditClient;
         log.info("Init ActionAuditAspect success");
     }
 
@@ -61,7 +61,7 @@ public class ActionAuditAspect {
 
         try {
             watch.start("ActionAuditStart");
-            isAuditRecording = audit.isRecording();
+            isAuditRecording = auditClient.isRecording();
             if (isAuditRecording) {
                 method = ((MethodSignature) pjp.getSignature()).getMethod();
                 record = method.getAnnotation(ActionAuditRecord.class);
@@ -109,8 +109,8 @@ public class ActionAuditAspect {
                     if (watch.isRunning()) {
                         watch.stop();
                     }
-                    if (log.isInfoEnabled()) {
-                        log.info("Audit action {}, cost: {}", record.actionId(), watch.prettyPrint());
+                    if (log.isDebugEnabled()) {
+                        log.debug("Audit action {}, cost: {}", record.actionId(), watch.prettyPrint());
                     }
                 }
             }

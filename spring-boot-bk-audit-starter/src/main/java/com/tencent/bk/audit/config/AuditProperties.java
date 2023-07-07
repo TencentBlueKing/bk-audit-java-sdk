@@ -27,6 +27,11 @@ public class AuditProperties {
     @Setter
     @ToString
     private static class Exporter {
+        /**
+         * 类型
+         *
+         * @see com.tencent.bk.audit.constants.ExporterTypeEnum.Constants
+         */
         private String type;
     }
 }

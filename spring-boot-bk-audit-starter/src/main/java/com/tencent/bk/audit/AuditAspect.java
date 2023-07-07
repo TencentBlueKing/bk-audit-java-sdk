@@ -2,7 +2,7 @@ package com.tencent.bk.audit;
 
 import com.tencent.bk.audit.annotations.AuditEntry;
 import com.tencent.bk.audit.annotations.AuditRequestBody;
-import com.tencent.bk.audit.model.AuditContext;
+import com.tencent.bk.audit.context.AuditContext;
 import com.tencent.bk.audit.model.AuditHttpRequest;
 import com.tencent.bk.audit.model.ErrorInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +12,6 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
-import javax.servlet.http.HttpServletRequest;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -26,15 +25,15 @@ import java.util.Arrays;
 @Slf4j
 @Order(Ordered.LOWEST_PRECEDENCE - 1)
 public class AuditAspect {
-    private final Audit audit;
+    private final AuditClient auditClient;
     private final AuditRequestProvider auditRequestProvider;
     private final AuditExceptionResolver auditExceptionResolver;
 
 
-    public AuditAspect(Audit audit,
+    public AuditAspect(AuditClient auditClient,
                        AuditRequestProvider auditRequestProvider,
                        AuditExceptionResolver auditExceptionResolver) {
-        this.audit = audit;
+        this.auditClient = auditClient;
         this.auditRequestProvider = auditRequestProvider;
         this.auditExceptionResolver = auditExceptionResolver;
         log.info("Init AuditAspect success");
@@ -48,8 +47,8 @@ public class AuditAspect {
 
     @Before("auditEntry()")
     public void startAudit(JoinPoint jp) {
-        if (log.isInfoEnabled()) {
-            log.info("Start audit, entry: {}", jp.getSignature().toShortString());
+        if (log.isDebugEnabled()) {
+            log.debug("Start audit, entry: {}", jp.getSignature().toShortString());
         }
 
         long start = System.currentTimeMillis();
@@ -57,35 +56,30 @@ public class AuditAspect {
             Method method = ((MethodSignature) jp.getSignature()).getMethod();
             AuditEntry record = method.getAnnotation(AuditEntry.class);
             startAudit(jp, method, record);
-        } catch (Throwable e) {
-            // 忽略审计错误，避免影响业务代码执行
-            log.error("Start audit caught exception", e);
         } finally {
-            if (log.isInfoEnabled()) {
-                log.info("Audit start, cost: {}", System.currentTimeMillis() - start);
+            if (log.isDebugEnabled()) {
+                log.debug("Audit start, cost: {}", System.currentTimeMillis() - start);
             }
         }
     }
 
     private void startAudit(JoinPoint jp, Method method, AuditEntry record) {
-        AuditContext auditContext = AuditContext.builder(record.actionId())
-            .setSubActionIds(record.subActionIds().length == 0 ? null : Arrays.asList(record.subActionIds()))
-            .setUsername(auditRequestProvider.getUsername())
-            .setAccessType(auditRequestProvider.getAccessType())
-            .setAccessSourceIp(auditRequestProvider.getClientIp())
-            .setUserIdentifyType(auditRequestProvider.getUserIdentifyType())
-            .setUserIdentifyTenantId(auditRequestProvider.getUserIdentifyTenantId())
-            .setBkAppCode(auditRequestProvider.getBkAppCode())
-            .setRequestId(auditRequestProvider.getRequestId())
-            .setAccessUserAgent(auditRequestProvider.getUserAgent())
-            .setHttpRequest(parseRequest(jp, method, auditRequestProvider.getRequest()))
-            .build();
-        audit.startAudit(auditContext);
+        AuditContext auditContext = auditClient.auditContextBuilder(record.actionId())
+                .setSubActionIds(record.subActionIds().length == 0 ? null : Arrays.asList(record.subActionIds()))
+                .setUsername(auditRequestProvider.getUsername())
+                .setAccessType(auditRequestProvider.getAccessType())
+                .setAccessSourceIp(auditRequestProvider.getClientIp())
+                .setUserIdentifyType(auditRequestProvider.getUserIdentifyType())
+                .setUserIdentifyTenantId(auditRequestProvider.getUserIdentifyTenantId())
+                .setBkAppCode(auditRequestProvider.getBkAppCode())
+                .setRequestId(auditRequestProvider.getRequestId())
+                .setAccessUserAgent(auditRequestProvider.getUserAgent())
+                .setHttpRequest(parseRequest(jp, method, auditRequestProvider.getRequest()))
+                .build();
+        auditClient.startAudit(auditContext);
     }
 
-    private AuditHttpRequest parseRequest(JoinPoint jp, Method method, HttpServletRequest request) {
-        AuditHttpRequest auditHttpRequest = new AuditHttpRequest(request.getRequestURI(),
-            request.getQueryString(), null);
+    private AuditHttpRequest parseRequest(JoinPoint jp, Method method, AuditHttpRequest request) {
         Object[] args = jp.getArgs();
         Annotation[][] annotations = method.getParameterAnnotations();
         for (int i = 0; i < annotations.length; i++) {
@@ -102,28 +96,22 @@ public class AuditAspect {
                 }
             }
             if (found) {
-                auditHttpRequest.setBody(arg);
+                request.setBody(arg);
                 break;
             }
         }
-        return auditHttpRequest;
+        return request;
     }
 
     @After(value = "auditEntry()")
     public void stopAudit(JoinPoint jp) {
-        if (log.isInfoEnabled()) {
-            log.info("Stop audit");
-        }
         long start = System.currentTimeMillis();
-
         try {
-            audit.stopAudit();
-        } catch (Throwable e) {
-            // 忽略审计错误，避免影响业务代码执行
-            log.error("Audit stop caught exception", e);
+            auditClient.stopAudit();
         } finally {
-            if (log.isInfoEnabled()) {
-                log.info("Audit stop, cost: {}", System.currentTimeMillis() - start);
+            if (log.isDebugEnabled()) {
+                log.debug("Stop audit, entry: {}, cost: {}", jp.getSignature().toShortString(),
+                        System.currentTimeMillis() - start);
             }
         }
     }
@@ -131,24 +119,19 @@ public class AuditAspect {
     @AfterThrowing(value = "auditEntry()", throwing = "throwable")
     public void auditException(JoinPoint jp, Throwable throwable) {
         long start = System.currentTimeMillis();
-        if (log.isInfoEnabled()) {
-            log.info("Audit exception");
-        }
 
         try {
             recordException(throwable);
-        } catch (Throwable e) {
-            // 忽略审计错误，避免影响业务代码执行
-            log.error("Audit exception caught exception", e);
         } finally {
-            if (log.isInfoEnabled()) {
-                log.info("Audit exception, cost: {}", System.currentTimeMillis() - start);
+            if (log.isDebugEnabled()) {
+                log.debug("Audit exception, entry: {}, cost: {}", jp.getSignature().toShortString(),
+                        System.currentTimeMillis() - start);
             }
         }
     }
 
     private void recordException(Throwable e) {
         ErrorInfo errorInfo = auditExceptionResolver.resolveException(e);
-        audit.currentAuditContext().error(errorInfo.getErrorCode(), errorInfo.getErrorMessage());
+        auditClient.currentAuditContext().error(errorInfo.getErrorCode(), errorInfo.getErrorMessage());
     }
 }

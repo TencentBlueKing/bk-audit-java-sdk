@@ -1,8 +1,9 @@
 package com.tencent.bk.audit.config;
 
 import com.tencent.bk.audit.*;
+import com.tencent.bk.audit.constants.ExporterTypeEnum;
 import com.tencent.bk.audit.exporter.EventExporter;
-import com.tencent.bk.audit.exporter.LogFileExporter;
+import com.tencent.bk.audit.exporter.LogFileEventExporter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -16,20 +17,22 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(name = "audit.enabled", havingValue = "true", matchIfMissing = true)
 @Slf4j
 public class AuditAutoConfiguration {
-    private static final String EXPORTER_TYPE_LOG_FILE = "log_file";
 
+    /**
+     * 审计事件默认 Exporter : 文件日志
+     */
     @Bean
-    @ConditionalOnProperty(name = "audit.exporter.type", havingValue = EXPORTER_TYPE_LOG_FILE,
+    @ConditionalOnProperty(name = "audit.exporter.type", havingValue = ExporterTypeEnum.Constants.LOG_FILE,
             matchIfMissing = true)
-    LogFileExporter logFileEventExporter() {
+    LogFileEventExporter logFileEventExporter() {
         log.info("Init LogFileExporter");
-        return new LogFileExporter();
+        return new LogFileEventExporter();
     }
 
     @Bean
-    Audit audit(EventExporter exporter) {
+    AuditClient audit(EventExporter exporter, AuditExceptionResolver auditExceptionResolver) {
         log.info("Init Audit");
-        return new Audit(exporter);
+        return new AuditClient(exporter, auditExceptionResolver);
     }
 
     @Bean
@@ -47,16 +50,16 @@ public class AuditAutoConfiguration {
     }
 
     @Bean
-    public AuditAspect auditRecordAspect(Audit audit,
+    public AuditAspect auditRecordAspect(AuditClient auditClient,
                                          AuditRequestProvider auditRequestProvider,
                                          AuditExceptionResolver auditExceptionResolver) {
         log.info("Init AuditAspect");
-        return new AuditAspect(audit, auditRequestProvider, auditExceptionResolver);
+        return new AuditAspect(auditClient, auditRequestProvider, auditExceptionResolver);
     }
 
     @Bean
-    public ActionAuditAspect actionAuditRecordAspect(Audit audit) {
+    public ActionAuditAspect actionAuditRecordAspect(AuditClient auditClient) {
         log.info("Init ActionAuditAspect");
-        return new ActionAuditAspect(audit);
+        return new ActionAuditAspect(auditClient);
     }
 }

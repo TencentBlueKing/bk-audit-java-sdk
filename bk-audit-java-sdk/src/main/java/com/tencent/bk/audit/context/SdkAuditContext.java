@@ -1,8 +1,11 @@
-package com.tencent.bk.audit.model;
+package com.tencent.bk.audit.context;
 
 import com.tencent.bk.audit.constants.AccessTypeEnum;
 import com.tencent.bk.audit.constants.AuditEventKey;
+import com.tencent.bk.audit.constants.Constants;
 import com.tencent.bk.audit.constants.UserIdentifyTypeEnum;
+import com.tencent.bk.audit.model.AuditEvent;
+import com.tencent.bk.audit.model.AuditHttpRequest;
 import com.tencent.bk.audit.utils.EventIdGenerator;
 import org.apache.commons.lang3.StringUtils;
 
@@ -38,10 +41,15 @@ public class SdkAuditContext implements AuditContext {
      */
     private String actionId;
 
+    /**
+     * 子操作ID
+     */
+    private final List<String> subActionIds;
+
     private final AuditHttpRequest httpRequest;
 
     /**
-     * 所有的操作审计上下文
+     * 包含的操作审计上下文
      */
     private final List<ActionAuditContext> actionAuditContexts = new ArrayList<>();
 
@@ -55,10 +63,10 @@ public class SdkAuditContext implements AuditContext {
      */
     private ActionAuditContext currentActionAuditContext;
 
-    /**
-     * 子操作ID
-     */
-    private final List<String> subActionIds;
+    private Integer resultCode;
+
+    private String resultContent;
+
 
     SdkAuditContext(String actionId,
                     String requestId,
@@ -95,29 +103,51 @@ public class SdkAuditContext implements AuditContext {
         actionAuditContexts.add(actionAuditContext);
     }
 
+    @Override
+    public void end() {
+        this.endTime = System.currentTimeMillis();
+        buildAuditEvents();
+    }
+
     private void buildAuditEvents() {
         if (StringUtils.isEmpty(actionId)) {
             return;
         }
-
         Map<AuditEventKey, AuditEvent> auditEvents = new HashMap<>();
-        actionAuditContexts.stream()
-                .filter(actionAuditContext -> isActionRecordable(actionAuditContext.getActionId()))
-                .forEach(actionAuditContext ->
-                        actionAuditContext.getEvents().forEach(
-                                auditEvent -> auditEvents.put(auditEvent.toAuditKey(), auditEvent)
-                        )
-                );
+        if (isFail()) {
+            AuditEvent auditEvent = new AuditEvent(actionId);
+            auditEvent.setStartTime(startTime);
+            auditEvent.setEndTime(endTime);
+            auditEvent.setResultCode(resultCode);
+            auditEvent.setResultContent(resultContent);
+            auditEvents.put(auditEvent.toAuditKey(), auditEvent);
+        } else {
+            actionAuditContexts.stream()
+                    .filter(actionAuditContext -> isActionRecordable(actionAuditContext.getActionId()))
+                    .forEach(actionAuditContext ->
+                            actionAuditContext.getEvents().forEach(
+                                    auditEvent -> auditEvents.put(auditEvent.toAuditKey(), auditEvent)
+                            )
+                    );
+        }
+
         if (!auditEvents.isEmpty()) {
             auditEvents.values().forEach(this::addContextAttributes);
             this.events.addAll(auditEvents.values());
         }
     }
 
+    private boolean isFail() {
+        return this.resultCode != null && this.resultCode != Constants.RESULT_CODE_SUCCESS;
+    }
+
     private void addContextAttributes(AuditEvent auditEvent) {
         auditEvent.setRequestId(requestId);
         auditEvent.setBkAppCode(bkAppCode);
 
+        if (StringUtils.isEmpty(auditEvent.getId())) {
+            auditEvent.setId(EventIdGenerator.generateId());
+        }
         if (accessType != null) {
             auditEvent.setAccessType(accessType.getValue());
         }
@@ -141,29 +171,14 @@ public class SdkAuditContext implements AuditContext {
     }
 
     @Override
-    public void end() {
-        this.endTime = System.currentTimeMillis();
-        buildAuditEvents();
-    }
-
-    @Override
     public void setCurrentActionAuditContext(ActionAuditContext actionAuditContext) {
         this.currentActionAuditContext = actionAuditContext;
     }
 
     @Override
     public void error(int resultCode, String resultDesc) {
-        this.endTime = System.currentTimeMillis();
-        this.actionAuditContexts.clear();
-        this.events.clear();
-        AuditEvent auditEvent = new AuditEvent(actionId);
-        auditEvent.setId(EventIdGenerator.generateId());
-        addContextAttributes(auditEvent);
-        auditEvent.setStartTime(startTime);
-        auditEvent.setEndTime(endTime);
-        auditEvent.setResultCode(resultCode);
-        auditEvent.setResultContent(resultDesc);
-        this.events.add(auditEvent);
+        this.resultCode = resultCode;
+        this.resultContent = StringUtils.isNotBlank(resultDesc) ? resultDesc : "Fail";
     }
 
     @Override
@@ -176,5 +191,92 @@ public class SdkAuditContext implements AuditContext {
         if (StringUtils.isEmpty(this.actionId)) {
             this.actionId = actionId;
         }
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", SdkAuditContext.class.getSimpleName() + "[", "]")
+                .add("requestId='" + requestId + "'")
+                .add("username='" + username + "'")
+                .add("userIdentifyType=" + userIdentifyType)
+                .add("userIdentifyTenantId='" + userIdentifyTenantId + "'")
+                .add("startTime=" + startTime)
+                .add("endTime=" + endTime)
+                .add("bkAppCode='" + bkAppCode + "'")
+                .add("accessType=" + accessType)
+                .add("accessSourceIp='" + accessSourceIp + "'")
+                .add("accessUserAgent='" + accessUserAgent + "'")
+                .add("actionId='" + actionId + "'")
+                .add("httpRequest=" + httpRequest)
+                .add("actionAuditContexts=" + actionAuditContexts)
+                .add("events=" + events)
+                .add("currentActionAuditContext=" + currentActionAuditContext)
+                .add("subActionIds=" + subActionIds)
+                .toString();
+    }
+
+    @Override
+    public String getRequestId() {
+        return requestId;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public UserIdentifyTypeEnum getUserIdentifyType() {
+        return userIdentifyType;
+    }
+
+    @Override
+    public String getUserIdentifyTenantId() {
+        return userIdentifyTenantId;
+    }
+
+    @Override
+    public Long getStartTime() {
+        return startTime;
+    }
+
+    @Override
+    public Long getEndTime() {
+        return endTime;
+    }
+
+    @Override
+    public String getBkAppCode() {
+        return bkAppCode;
+    }
+
+    @Override
+    public AccessTypeEnum getAccessType() {
+        return accessType;
+    }
+
+    @Override
+    public String getAccessSourceIp() {
+        return accessSourceIp;
+    }
+
+    @Override
+    public String getAccessUserAgent() {
+        return accessUserAgent;
+    }
+
+    @Override
+    public String getActionId() {
+        return actionId;
+    }
+
+    @Override
+    public List<String> getSubActionIds() {
+        return subActionIds;
+    }
+
+    @Override
+    public AuditHttpRequest getHttpRequest() {
+        return httpRequest;
     }
 }

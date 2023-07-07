@@ -1,4 +1,4 @@
-package com.tencent.bk.audit.model;
+package com.tencent.bk.audit.context;
 
 public class NoopActionAuditScope implements ActionAuditScope {
     @Override
