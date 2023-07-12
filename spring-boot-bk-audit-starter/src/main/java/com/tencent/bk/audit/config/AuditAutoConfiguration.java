@@ -24,6 +24,7 @@ public class AuditAutoConfiguration {
     @Bean
     @ConditionalOnProperty(name = "audit.exporter.type", havingValue = ExporterTypeEnum.Constants.LOG_FILE,
             matchIfMissing = true)
+    @ConditionalOnMissingBean(value = EventExporter.class)
     LogFileEventExporter logFileEventExporter() {
         log.info("Init LogFileExporter");
         return new LogFileEventExporter();

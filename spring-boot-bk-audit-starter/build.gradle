@@ -21,8 +21,13 @@ dependencies {
     implementation("javax.servlet:javax.servlet-api")
     api(project(":bk-audit-java-sdk"))
     testImplementation("org.junit.jupiter:junit-jupiter-api")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation("org.springframework.boot:spring-boot-test")
+    testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
+    testImplementation("org.springframework:spring-test")
+    testImplementation("org.springframework:spring-webmvc")
     testImplementation("org.assertj:assertj-core")
+    testImplementation("org.mockito:mockito-core")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     compileOnly("org.projectlombok:lombok")
     testCompileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
@@ -32,7 +37,7 @@ publishing {
     publications {
         core (MavenPublication) {
             groupId = 'com.tencent.bk.sdk'
-            version = '1.0.0'
+            version = project.property('version')
             artifactId = 'spring-boot-bk-audit-starter'
 
             from components.java

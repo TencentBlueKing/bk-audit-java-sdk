@@ -43,6 +43,7 @@ public class SingleAuditEventExample {
                 .build()
                 .wrapActionRunnable(() -> {
                     // action code
+                    ActionAuditContext.current().addAttribute("host_id", "1,2,3,4");
                 })
                 .run();
     }

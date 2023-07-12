@@ -11,6 +11,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * 默认的 AuditRequestProvider 实现。可以通过继承 DefaultAuditRequestProvider 自定义 AuditRequestProvider
+ */
 @Slf4j
 public class DefaultAuditRequestProvider implements AuditRequestProvider {
     public static final String HEADER_USERNAME = "X-Username";
@@ -23,7 +26,7 @@ public class DefaultAuditRequestProvider implements AuditRequestProvider {
     @Override
     public AuditHttpRequest getRequest() {
         HttpServletRequest httpServletRequest = getHttpServletRequest();
-        return new AuditHttpRequest(httpServletRequest.getRequestURI(), httpServletRequest.getQueryString(), null);
+        return new AuditHttpRequest(httpServletRequest);
     }
 
     private HttpServletRequest getHttpServletRequest() {

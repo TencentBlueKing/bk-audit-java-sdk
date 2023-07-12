@@ -27,20 +27,23 @@ ext {
 allprojects {
 
     group = "com.tencent.bk.sdk"
-    version = "1.0.0"
+    version = project.property("version")
 
     apply plugin: "idea"
     apply plugin: "eclipse"
     apply plugin: "java-library"
     apply plugin: "io.spring.dependency-management"
-//    apply plugin: "maven-publish"
 
     // 版本管理
     dependencyManagement {
         dependencies {
             dependency("org.springframework.boot:spring-boot-autoconfigure:$springBootVersion")
+            dependency("org.springframework.boot:spring-boot-test-autoconfigure:$springBootVersion")
             dependency("org.springframework.boot:spring-boot-configuration-processor:$springBootVersion")
             dependency("org.springframework:spring-web:$springVersion")
+            dependency("org.springframework:spring-webmvc:$springVersion")
+            dependency("org.springframework:spring-test:$springVersion")
+            dependency("org.springframework.boot:spring-boot-test:$springBootVersion")
             dependencySet(group: "org.aspectj", version: "$aspectjVersion") {
                 entry "aspectjrt"
                 entry "aspectjweaver"
