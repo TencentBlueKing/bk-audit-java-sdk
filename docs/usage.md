@@ -529,7 +529,9 @@ public class JobExecuteService {
 **SDK 的使用案例以及测试用例**
 
 [编码方式实现操作审计](../bk-audit-java-sdk/src/test/java/com/tencent/bk/audit/example)
+
 [与 SpringBoot 继承，注解方式声明操作审计](../spring-boot-bk-audit-starter/src/test/java/com/tencent/bk/audit/controller)
+
 [蓝鲸作业平台对接审计中心案例](https://github.com/TencentBlueKing/bk-job/tree/master/src/backend)
 
 ## 最佳实践
