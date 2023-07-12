@@ -2,7 +2,7 @@
 
 ## Overview
 
-bk-auditClient-java-sdk is the Go SDK of blueking Audit Center (BK-AUDIT), your system can use BK-Audit easily via SDK.
+bk-audit-java-sdk is the Go SDK of blueking Audit Center (BK-AUDIT), your system can use BK-Audit easily via SDK.
 
 ## Features
 

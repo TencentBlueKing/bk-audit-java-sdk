@@ -1,5 +1,5 @@
 TencentBlueKing is pleased to support the open source community by making
-蓝鲸智云 - 蓝鲸审计中心 Java SDK (bk-auditClient-go-sdk) available.
+蓝鲸智云 - 蓝鲸审计中心 Java SDK (bk-audit-java-sdk) available.
 Copyright (C)  2022 THL A29 Limited,
 a Tencent company. All rights reserved.
 Licensed under the MIT License (the "License");

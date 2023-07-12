@@ -2,7 +2,7 @@
 
 ## Overview
 
-bk-auditClient-java-sdk 是蓝鲸审计中心 (BK-AUDIT) 提供的用于快速接入审计体系的 Java SDK
+bk-audit-java-sdk 是蓝鲸审计中心 (BK-AUDIT) 提供的用于快速接入审计体系的 Java SDK
 
 ## Features
 
