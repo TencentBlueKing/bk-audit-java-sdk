@@ -49,11 +49,11 @@ Java 程序通用，通过编码方式实现审计接入。
 ### 依赖声明
 
 - build.gradle
-```
+```groovy
 implementation 'com.tencent.bk.sdk:bk-audit-java-sdk:1.0.0'
 ```
 - pom.xml
-```
+```xml
 <dependency>
     <groupId>com.tencent.bk.sdk</groupId>
     <artifactId>bk-audit-java-sdk</artifactId>
@@ -67,7 +67,7 @@ implementation 'com.tencent.bk.sdk:bk-audit-java-sdk:1.0.0'
 
 AuditClient 为 SDK 的操作客户端，提供了审计管理的 API。AuditClient 是线程安全的。对于一个应用服务来说，只需要初始化一个单例的 AuditClient。
 
-```
+```java
 // 初始化审计事件 Exporter
 EventExporter eventExporter = new LogFileEventExporter();
 // 初始化审计操作异常解析器
@@ -133,11 +133,11 @@ public class SingleAuditEventExample {
 
 ### 依赖声明
 - build.gradle
-```
+```groovy
 implementation 'com.tencent.bk.sdk:spring-boot-bk-audit-starter:1.0.0'
 ```
 - pom.xml
-```
+```xml
 <dependency>
     <groupId>com.tencent.bk.sdk</groupId>
     <artifactId>spring-boot-bk-audit-starter</artifactId>
@@ -199,7 +199,7 @@ implementation 'com.tencent.bk.sdk:spring-boot-bk-audit-starter:1.0.0'
 
 **@AuditEntry / @ActionAuditRecord 既可以声明在同一个方法上，也可以声明在不同的方法上**
 
-```
+```java
 @RestController
 @RequestMapping("/test/audit/action")
 public class AuditTestController {
@@ -237,7 +237,7 @@ public class AuditTestController {
 
 
 
-```
+```java
 @RestController
 @RequestMapping("/test/audit/action")
 public class AuditTestController {
@@ -295,7 +295,7 @@ public class JobTemplateService {
 
 [demo](../spring-boot-bk-audit-starter/src/test/java/com/tencent/bk/audit/controller/AuditTestController.java)
 
-```
+```java
 @RestController
 @RequestMapping("/test/audit/action")
 public class AuditTestController {
@@ -421,7 +421,7 @@ public class JobPlanService {
 
 除了 SDK 中自定义的 EventExporter，开发者可以通过实现 EventExporter 接口自定义 EventExporter。
 
-```
+```java
 @Component
 public class MyEventExporter implements EventExporter {
     @Override
@@ -444,7 +444,7 @@ SDK 提供了审计事件生成的默认实现 DefaultAuditEventBuilder。开发
 
 - 自定义 ExecuteJobAuditEventBuilder，实现多个资源实例合并到同一个审计事件中
 
-```
+```java
 @RestController
 @RequestMapping("/test/audit/action")
 public class AuditTestController {
