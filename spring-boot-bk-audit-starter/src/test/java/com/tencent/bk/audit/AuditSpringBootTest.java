@@ -59,7 +59,8 @@ public class AuditSpringBootTest {
                         .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler")
                         .header(DefaultAuditRequestProvider.HEADER_REQUEST_ID, requestId)
                         .header(DefaultAuditRequestProvider.HEADER_ACCESS_TYPE, AccessTypeEnum.WEB.getValue())
-                        .header(DefaultAuditRequestProvider.HEADER_USER_IDENTIFY_TYPE, UserIdentifyTypeEnum.PERSONAL.getValue())
+                        .header(DefaultAuditRequestProvider.HEADER_USER_IDENTIFY_TYPE,
+                                UserIdentifyTypeEnum.PERSONAL.getValue())
                         .header("User-Agent", "Chrome")
                         .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler"))
                 .andExpect(status().isOk());
@@ -106,12 +107,14 @@ public class AuditSpringBootTest {
                         .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler")
                         .header(DefaultAuditRequestProvider.HEADER_REQUEST_ID, requestId)
                         .header(DefaultAuditRequestProvider.HEADER_ACCESS_TYPE, AccessTypeEnum.WEB.getValue())
-                        .header(DefaultAuditRequestProvider.HEADER_USER_IDENTIFY_TYPE, UserIdentifyTypeEnum.PERSONAL.getValue())
+                        .header(DefaultAuditRequestProvider.HEADER_USER_IDENTIFY_TYPE,
+                                UserIdentifyTypeEnum.PERSONAL.getValue())
                         .header("User-Agent", "Chrome")
                         .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler"))
                 .andExpect(status().isOk())
                 .andReturn();
-        JobTemplate createdJobTemplate = JsonUtils.fromJson(mockResult.getResponse().getContentAsString(), JobTemplate.class);
+        JobTemplate createdJobTemplate = JsonUtils.fromJson(
+                mockResult.getResponse().getContentAsString(), JobTemplate.class);
 
         ArgumentCaptor<Collection<AuditEvent>> argument = ArgumentCaptor.forClass(Collection.class);
         verify(eventExporter).export(argument.capture());
@@ -132,7 +135,9 @@ public class AuditSpringBootTest {
         assertNotNull(auditEvent.getAccessSourceIp());
         assertEquals("Chrome", auditEvent.getAccessUserAgent());
         assertEquals(AccessTypeEnum.WEB.getValue(), auditEvent.getAccessType());
-        assertEquals("Create job template [test_audit_create_job_template](" + createdJobTemplate.getId() + ")", auditEvent.getContent());
+        assertEquals(
+                "Create job template [test_audit_create_job_template](" + createdJobTemplate.getId() + ")",
+                auditEvent.getContent());
         assertEquals("bk_audit_event", auditEvent.getAuditEventSignature());
         assertEquals(Constants.RESULT_CODE_SUCCESS, auditEvent.getResultCode());
         assertEquals(Constants.RESULT_SUCCESS_DESC, auditEvent.getResultContent());
@@ -152,7 +157,8 @@ public class AuditSpringBootTest {
                         .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler")
                         .header(DefaultAuditRequestProvider.HEADER_REQUEST_ID, requestId)
                         .header(DefaultAuditRequestProvider.HEADER_ACCESS_TYPE, AccessTypeEnum.WEB.getValue())
-                        .header(DefaultAuditRequestProvider.HEADER_USER_IDENTIFY_TYPE, UserIdentifyTypeEnum.PERSONAL.getValue())
+                        .header(DefaultAuditRequestProvider.HEADER_USER_IDENTIFY_TYPE,
+                                UserIdentifyTypeEnum.PERSONAL.getValue())
                         .header("User-Agent", "Chrome")
                         .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler"))
                 .andExpect(status().isOk())
@@ -220,7 +226,8 @@ public class AuditSpringBootTest {
                         .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler")
                         .header(DefaultAuditRequestProvider.HEADER_REQUEST_ID, requestId)
                         .header(DefaultAuditRequestProvider.HEADER_ACCESS_TYPE, AccessTypeEnum.WEB.getValue())
-                        .header(DefaultAuditRequestProvider.HEADER_USER_IDENTIFY_TYPE, UserIdentifyTypeEnum.PERSONAL.getValue())
+                        .header(DefaultAuditRequestProvider.HEADER_USER_IDENTIFY_TYPE,
+                                UserIdentifyTypeEnum.PERSONAL.getValue())
                         .header("User-Agent", "Chrome")
                         .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler"))
                 .andExpect(status().isOk())
