@@ -1,5 +1,8 @@
 ![logo.png](assests/logo.png)
 
+[![license](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://github.com/TencentBlueKing/bk-audit-java-sdk/blob/master/LICENSE.txt)
+[![Release Version](https://img.shields.io/badge/release-0.0.5-brightgreen.svg)](https://github.com/TencentBlueKing/bk-audit-java-sdk/releases)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/TencentBlueKing/bk-audit-java-sdk/pulls)
 ## Overview
 
 bk-audit-java-sdk 是蓝鲸审计中心 (BK-AUDIT) 提供的用于快速接入审计体系的 Java SDK
