@@ -83,4 +83,29 @@ allprojects {
     tasks.withType(Javadoc) {
         options.encoding("UTF-8")
     }
+
+    task sourceJar(type: Jar) {
+        classifier "sources"
+        from sourceSets.main.allJava
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier "javadoc"
+        from javadoc.destinationDir
+    }
+
+    javadoc {
+        description = "javadoc for bk-auit-java-sdk"
+        options.memberLevel = JavadocMemberLevel.PROTECTED
+        options.author = true
+        options.version = true
+        options.header = project.name
+        // 不检查：非标的javadoc注解不报错
+        options.addStringOption('Xdoclint:none', '-quiet')
+        options.addStringOption("charset", "UTF-8")
+        logging.captureStandardError LogLevel.INFO
+        logging.captureStandardOutput LogLevel.INFO
+        options.encoding = "UTF-8"
+        options.charSet = "UTF-8"
+    }
 }
