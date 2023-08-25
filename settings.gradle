@@ -7,16 +7,11 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
-
-    def mavenRepoUrl = providers.gradleProperty('MAVEN_REPO_URL').get()
-
     repositories {
-        mavenLocal()
-        if (mavenRepoUrl != null) {
-            println "Add private maven repo $mavenRepoUrl"
-            maven { url mavenRepoUrl }
-        }
         mavenCentral()
+        maven {
+            url "https://oss.sonatype.org/content/repositories/snapshots"
+        }
     }
 }
 rootProject.name = "bk-audit-java-sdk"

@@ -1,5 +1,6 @@
 plugins {
     id "maven-publish"
+    id "signing"
 }
 
 description = 'BlueKing Audit Java SDK'
@@ -22,15 +23,18 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
 }
-
 publishing {
     publications {
-        core (MavenPublication) {
+        mavenJava (MavenPublication) {
             groupId = 'com.tencent.bk.sdk'
             version = project.property('version')
             artifactId = 'bk-audit-java-sdk'
 
             from components.java
+
+            artifact sourceJar
+            artifact javadocJar
+
             versionMapping {
                 usage('java-api') {
                     fromResolutionOf('runtimeClasspath')
@@ -39,19 +43,89 @@ publishing {
                     fromResolutionResult()
                 }
             }
-
+            pom {
+                name = 'spring-boot-bk-audit-starter'
+                description = 'Tencent BlueKing BK-Audit SDK spring boot starter'
+                url = 'https://github.com/TencentBlueKing/bk-audit-java-sdk'
+                licenses {
+                    license {
+                        name = 'MIT'
+                        url = 'https://github.com/TencentBlueKing/bk-audit-java-sdk/blob/master/LICENSE.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'bk-job'
+                        name = 'bk-job'
+                        email = 'bk-job@tencent.com'
+                        roles = ['Manager']
+                    }
+                }
+                scm {
+                    url = 'https://github.com/TencentBlueKing/bk-audit-java-sdk'
+                    connection = 'scm:git:https://github.com/TencentBlueKing/bk-audit-java-sdk.git'
+                    developerConnection = 'scm:git:git@github.com:TencentBlueKing/bk-audit-java-sdk.git'
+                }
+            }
         }
     }
+
     repositories {
         maven {
-            name = 'bk-audit-java-sdk'
-            url = 'https://mirrors.tencent.com/repository/maven/bk-audit-java-sdk/'
+            name = 'MavenCentral'
+            // 正式包
+            def mavenRepoDeployUrl = System.getProperty("mavenRepoDeployUrl")
+            def mavenRepoUsername = System.getProperty("mavenRepoUsername")
+            def mavenRepoPassword = System.getProperty("mavenRepoPassword")
+
+            if (mavenRepoDeployUrl == null) {
+                mavenRepoDeployUrl = System.getenv("build_mavenRepoDeployUrl")
+            }
+
+            if (mavenRepoUsername == null) {
+                mavenRepoUsername = System.getenv("build_mavenRepoUsername")
+            }
+
+            if (mavenRepoPassword == null) {
+                mavenRepoPassword = System.getenv("build_mavenRepoPassword")
+            }
+
+            // 快照包
+            def snapshotMavenRepoDeployUrl = System.getProperty("snapshotMavenRepoDeployUrl")
+            def snapshotMavenRepoUsername = System.getProperty("snapshotMavenRepoUsername")
+            def snapshotMavenRepoPassword = System.getProperty("snapshotMavenRepoPassword")
+
+            if (snapshotMavenRepoDeployUrl == null) {
+                snapshotMavenRepoDeployUrl = System.getenv("build_snapshotMavenRepoDeployUrl")
+            }
+
+            if (snapshotMavenRepoUsername == null) {
+                snapshotMavenRepoUsername = System.getenv("build_snapshotMavenRepoUsername")
+            }
+
+            if (snapshotMavenRepoPassword == null) {
+                snapshotMavenRepoPassword = System.getenv("build_snapshotMavenRepoPassword")
+            }
+
+            url = System.getProperty("snapshot") == "true" ? snapshotMavenRepoDeployUrl : mavenRepoDeployUrl
             credentials {
-                username = System.getenv("MAVEN_REPO_USER")
-                password = System.getenv("MAVEN_REPO_PASSWORD")
+                username = System.getProperty("snapshot") == "true" ? snapshotMavenRepoUsername : mavenRepoUsername
+                password = System.getProperty("snapshot") == "true" ? snapshotMavenRepoPassword : mavenRepoPassword
             }
         }
     }
 }
+
+signing {
+    sign publishing.publications.mavenJava
+}
+
+publish.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
+generateMetadataFileForMavenJavaPublication.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
+generatePomFileForMavenJavaPublication.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
+publishMavenJavaPublicationToMavenCentralRepository.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
+publishMavenJavaPublicationToMavenLocal.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
+publishToMavenLocal.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
+signMavenJavaPublication.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
 
 
