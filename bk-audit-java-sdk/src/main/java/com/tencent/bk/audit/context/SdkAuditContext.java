@@ -161,7 +161,7 @@ public class SdkAuditContext implements AuditContext {
         auditEvent.setUserIdentifyTenantId(userIdentifyTenantId);
 
         if (httpRequest != null) {
-            auditEvent.addExtendData("request", httpRequest);
+            auditEvent.addAuditHttpRequestExtendData(httpRequest.toAuditHttpRequestData());
         }
     }
 

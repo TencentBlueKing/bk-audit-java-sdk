@@ -1,10 +1,7 @@
 package com.tencent.bk.audit.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.tencent.bk.audit.constants.AccessTypeEnum;
-import com.tencent.bk.audit.constants.AuditEventKey;
-import com.tencent.bk.audit.constants.Constants;
-import com.tencent.bk.audit.constants.UserIdentifyTypeEnum;
+import com.tencent.bk.audit.constants.*;
 import lombok.Data;
 
 import java.util.HashMap;
@@ -163,6 +160,13 @@ public class AuditEvent {
             extendData = new HashMap<>();
         }
         extendData.put(key, value);
+    }
+
+    /**
+     * 添加扩展数据 - http 请求
+     */
+    public void addAuditHttpRequestExtendData(AuditHttpRequestData auditHttpRequestData) {
+        addExtendData(AuditExtendDataKeys.HTTP_REQUEST, auditHttpRequestData);
     }
 
     public AuditEventKey toAuditKey() {

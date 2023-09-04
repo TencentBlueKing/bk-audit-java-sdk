@@ -32,12 +32,12 @@ public class ActionAuditAspect {
     private final AuditClient auditClient;
 
     /**
-     * 参数名发现(线程安全)
+     * 参数名发现
      */
     private final DefaultParameterNameDiscoverer parameterNameDiscoverer = new DefaultParameterNameDiscoverer();
 
     /**
-     * SpEL表达式解析器(线程安全)
+     * SpEL表达式解析器
      */
     private final SpelExpressionParser spelExpressionParser = new SpelExpressionParser();
 

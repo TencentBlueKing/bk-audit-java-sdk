@@ -4,12 +4,23 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.StringJoiner;
 
 /**
- * 操作 - HTTP请求
+ * 审计操作 - HTTP请求
  */
 public class AuditHttpRequest {
     private final HttpServletRequest httpServletRequest;
+    /**
+     * http 请求 URI
+     */
     private final String uri;
+
+    /**
+     * http 请求 QueryParams
+     */
     private final String queryParams;
+
+    /**
+     * http 请求体
+     */
     private Object body;
 
     public AuditHttpRequest(HttpServletRequest httpServletRequest) {
@@ -22,10 +33,6 @@ public class AuditHttpRequest {
         this.body = body;
     }
 
-    public HttpServletRequest getHttpServletRequest() {
-        return httpServletRequest;
-    }
-
     public String getUri() {
         return uri;
     }
@@ -36,6 +43,14 @@ public class AuditHttpRequest {
 
     public Object getBody() {
         return body;
+    }
+
+    public HttpServletRequest getHttpServletRequest() {
+        return httpServletRequest;
+    }
+
+    public AuditHttpRequestData toAuditHttpRequestData() {
+        return new AuditHttpRequestData(this.uri, this.queryParams, this.body);
     }
 
     @Override
