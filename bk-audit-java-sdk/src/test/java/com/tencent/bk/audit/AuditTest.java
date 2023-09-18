@@ -58,6 +58,7 @@ public class AuditTest {
         AuditEvent auditEvent = auditEvents.stream().findAny().orElse(null);
         assertThat(auditEvent).isNotNull();
         assertNotNull(auditEvent.getId());
+        assertEquals("bk_job", auditEvent.getSystemId());
         assertEquals("execute_job_plan", auditEvent.getActionId());
         assertEquals("job_plan", auditEvent.getResourceTypeId());
         assertEquals("1000", auditEvent.getInstanceId());
@@ -95,6 +96,7 @@ public class AuditTest {
         auditEvents.forEach(auditEvent -> {
             assertThat(auditEvent).isNotNull();
             assertNotNull(auditEvent.getId());
+            assertEquals("bk_job", auditEvent.getSystemId());
             assertEquals("edit_job_plan", auditEvent.getActionId());
             assertEquals("job_plan", auditEvent.getResourceTypeId());
             assertEquals("3a84858499bd71d674bc40d4f73cb41a", auditEvent.getRequestId());
@@ -130,6 +132,7 @@ public class AuditTest {
         AuditEvent mainEvent = mainEvents.get(0);
         assertThat(mainEvent).isNotNull();
         assertNotNull(mainEvent.getId());
+        assertEquals("bk_job", mainEvent.getSystemId());
         assertEquals("delete_job_template", mainEvent.getActionId());
         assertEquals("job_template", mainEvent.getResourceTypeId());
         assertEquals("3a84858499bd71d674bc40d4f73cb41a", mainEvent.getRequestId());
@@ -156,6 +159,7 @@ public class AuditTest {
         subEvents.forEach(auditEvent -> {
             assertThat(auditEvent).isNotNull();
             assertNotNull(auditEvent.getId());
+            assertEquals("bk_job", auditEvent.getSystemId());
             assertEquals("delete_job_plan", auditEvent.getActionId());
             assertEquals("job_plan", auditEvent.getResourceTypeId());
             assertEquals("3a84858499bd71d674bc40d4f73cb41a", auditEvent.getRequestId());
@@ -177,6 +181,7 @@ public class AuditTest {
     void testAuditActionException() {
         AuditContext auditContext = auditClient.auditContextBuilder("execute_job_plan")
                 .setRequestId("3a84858499bd71d674bc40d4f73cb41a")
+                .setSystemId("bk_job")
                 .setAccessSourceIp("127.0.0.1")
                 .setAccessType(AccessTypeEnum.CONSOLE)
                 .setAccessUserAgent("Chrome")
@@ -209,6 +214,7 @@ public class AuditTest {
         AuditEvent auditEvent = auditEvents.stream().findAny().orElse(null);
         assertThat(auditEvent).isNotNull();
         assertNotNull(auditEvent.getId());
+        assertEquals("bk_job", auditEvent.getSystemId());
         assertEquals("execute_job_plan", auditEvent.getActionId());
         assertEquals("3a84858499bd71d674bc40d4f73cb41a", auditEvent.getRequestId());
         assertEquals("admin", auditEvent.getUsername());

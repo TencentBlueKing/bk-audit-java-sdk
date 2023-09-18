@@ -53,9 +53,10 @@ public class AuditAutoConfiguration {
     @Bean
     public AuditAspect auditRecordAspect(AuditClient auditClient,
                                          AuditRequestProvider auditRequestProvider,
-                                         AuditExceptionResolver auditExceptionResolver) {
+                                         AuditExceptionResolver auditExceptionResolver,
+                                         AuditProperties auditProperties) {
         log.info("Init AuditAspect");
-        return new AuditAspect(auditClient, auditRequestProvider, auditExceptionResolver);
+        return new AuditAspect(auditClient, auditRequestProvider, auditExceptionResolver, auditProperties);
     }
 
     @Bean

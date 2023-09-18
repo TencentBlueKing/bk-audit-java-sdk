@@ -22,6 +22,7 @@ public class SingleAuditEventExample {
     public void run() {
         // 构造审计上下文
         AuditContext auditContext = auditClient.auditContextBuilder("execute_job_plan")
+                .setSystemId("bk_job")
                 .setRequestId("3a84858499bd71d674bc40d4f73cb41a")
                 .setAccessSourceIp("127.0.0.1")
                 .setAccessType(AccessTypeEnum.CONSOLE)

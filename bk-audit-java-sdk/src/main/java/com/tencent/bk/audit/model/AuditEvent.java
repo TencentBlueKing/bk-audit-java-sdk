@@ -1,10 +1,7 @@
 package com.tencent.bk.audit.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.tencent.bk.audit.constants.AccessTypeEnum;
-import com.tencent.bk.audit.constants.AuditEventKey;
-import com.tencent.bk.audit.constants.Constants;
-import com.tencent.bk.audit.constants.UserIdentifyTypeEnum;
+import com.tencent.bk.audit.constants.*;
 import lombok.Data;
 
 import java.util.HashMap;
@@ -68,7 +65,13 @@ public class AuditEvent {
     private Long endTime;
 
     /**
-     * 事件上报模块
+     * 事件上报系统
+     */
+    @JsonProperty("system_id")
+    private String systemId;
+
+    /**
+     * 事件上报模块。一个 system_id 可能对应多个 bk_app_code
      */
     @JsonProperty("bk_app_code")
     private String bkAppCode;
@@ -163,6 +166,13 @@ public class AuditEvent {
             extendData = new HashMap<>();
         }
         extendData.put(key, value);
+    }
+
+    /**
+     * 添加扩展数据 - http 请求
+     */
+    public void addAuditHttpRequestExtendData(AuditHttpRequestData auditHttpRequestData) {
+        addExtendData(AuditExtendDataKeys.HTTP_REQUEST, auditHttpRequestData);
     }
 
     public AuditEventKey toAuditKey() {

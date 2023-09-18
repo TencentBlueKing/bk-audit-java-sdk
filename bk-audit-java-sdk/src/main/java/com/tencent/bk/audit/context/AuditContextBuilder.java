@@ -18,6 +18,8 @@ public class AuditContextBuilder {
 
     private String bkAppCode;
 
+    private String systemId;
+
     private AccessTypeEnum accessType;
 
     private String accessSourceIp;
@@ -98,8 +100,13 @@ public class AuditContextBuilder {
         return this;
     }
 
+    public AuditContextBuilder setSystemId(String systemId) {
+        this.systemId = systemId;
+        return this;
+    }
+
     public AuditContext build() {
         return new SdkAuditContext(actionId, requestId, username, userIdentifyType, userIdentifyTenantId,
-                bkAppCode, accessType, accessSourceIp, accessUserAgent, httpRequest, subActionIds);
+                systemId, bkAppCode, accessType, accessSourceIp, accessUserAgent, httpRequest, subActionIds);
     }
 }

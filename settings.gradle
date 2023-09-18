@@ -8,6 +8,23 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
+        // 用户通过命令行方式指定的 maven repo
+        def mavenRepoUrls = System.getProperty("mavenRepoUrl")
+        if (mavenRepoUrls == null || mavenRepoUrls.trim().length() == 0) {
+            // gradle.properties 中的 maven repo。优先级从高到低:
+            // 1. command line, as set using -D.
+            // 2. gradle.properties in GRADLE_USER_HOME directory (<home directory of the current user>/.gradle by default)
+            // 3. gradle.properties in the project’s directory, then its parent project’s directory up to the build’s root directory.
+            // 4. gradle.properties in Gradle installation directory.
+            mavenRepoUrls = settings.hasProperty("MAVEN_REPO_URL") ? settings.MAVEN_REPO_URL : null
+        }
+        if (mavenRepoUrls != null && mavenRepoUrls.trim().length() > 0) {
+            String[] repoUrls = mavenRepoUrls.trim().replace(" ", "").split(",")
+            for (String repoUrl : repoUrls) {
+                println("Add maven repo:" + repoUrl)
+                maven { url repoUrl }
+            }
+        }
         mavenCentral()
         maven {
             url "https://oss.sonatype.org/content/repositories/snapshots"

@@ -43,13 +43,6 @@ public interface AuditRequestProvider {
     }
 
     /**
-     * 获取操作发起的蓝鲸应用 App Code
-     */
-    default String getBkAppCode() {
-        return null;
-    }
-
-    /**
      * 获取操作启发的客户端 IP
      */
     String getClientIp();

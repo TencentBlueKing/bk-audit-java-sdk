@@ -1,0 +1,4 @@
+audit:
+  enabled: true
+  systemId: bk_job
+  bkAppCode: bk_job

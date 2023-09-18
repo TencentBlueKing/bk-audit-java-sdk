@@ -92,6 +92,8 @@ public interface AuditContext {
 
     String getBkAppCode();
 
+    String getSystemId();
+
     AccessTypeEnum getAccessType();
 
     String getAccessSourceIp();

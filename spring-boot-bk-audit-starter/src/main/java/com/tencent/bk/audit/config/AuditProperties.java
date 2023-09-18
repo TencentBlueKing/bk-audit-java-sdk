@@ -19,6 +19,16 @@ public class AuditProperties {
     private boolean enabled = true;
 
     /**
+     * 审计事件上报系统 ID
+     */
+    private String systemId;
+
+    /**
+     * 审计事件上报模块
+     */
+    private String bkAppCode;
+
+    /**
      * 审计事件 Exporter 配置
      */
     private Exporter exporter;

@@ -50,7 +50,7 @@ publishing {
                 licenses {
                     license {
                         name = 'MIT'
-                        url = 'https://github.com/TencentBlueKing/bk-audit-java-sdk/blob/master/LICENSE.txt'
+                        url = 'https://github.com/TencentBlueKing/bk-audit-java-sdk/blob/master/License.txt'
                     }
                 }
                 developers {
@@ -78,16 +78,11 @@ publishing {
             def mavenRepoUsername = System.getProperty("mavenRepoUsername")
             def mavenRepoPassword = System.getProperty("mavenRepoPassword")
 
-            if (mavenRepoDeployUrl == null) {
-                mavenRepoDeployUrl = System.getenv("build_mavenRepoDeployUrl")
-            }
-
-            if (mavenRepoUsername == null) {
-                mavenRepoUsername = System.getenv("build_mavenRepoUsername")
-            }
-
-            if (mavenRepoPassword == null) {
-                mavenRepoPassword = System.getenv("build_mavenRepoPassword")
+            if (mavenRepoDeployUrl == null || mavenRepoDeployUrl.trim().length() == 0) {
+                // gradle.properties 中的 maven deploy repo
+                mavenRepoDeployUrl = project.findProperty("MAVEN_REPO_DEPLOY_URL")
+                mavenRepoUsername = project.findProperty("MAVEN_REPO_USERNAME")
+                mavenRepoPassword = project.findProperty("MAVEN_REPO_PASSWORD")
             }
 
             // 快照包
@@ -95,17 +90,13 @@ publishing {
             def snapshotMavenRepoUsername = System.getProperty("snapshotMavenRepoUsername")
             def snapshotMavenRepoPassword = System.getProperty("snapshotMavenRepoPassword")
 
-            if (snapshotMavenRepoDeployUrl == null) {
-                snapshotMavenRepoDeployUrl = System.getenv("build_snapshotMavenRepoDeployUrl")
+            if (snapshotMavenRepoDeployUrl == null || snapshotMavenRepoDeployUrl.trim().length() == 0) {
+                // gradle.properties 中的 snapshot maven deploy repo
+                snapshotMavenRepoDeployUrl = project.findProperty("SNAPSHOT_MAVEN_REPO_DEPLOY_URL")
+                snapshotMavenRepoUsername = project.findProperty("SNAPSHOT_MAVEN_REPO_USERNAME")
+                snapshotMavenRepoPassword = project.findProperty("SNAPSHOT_MAVEN_REPO_PASSWORD")
             }
 
-            if (snapshotMavenRepoUsername == null) {
-                snapshotMavenRepoUsername = System.getenv("build_snapshotMavenRepoUsername")
-            }
-
-            if (snapshotMavenRepoPassword == null) {
-                snapshotMavenRepoPassword = System.getenv("build_snapshotMavenRepoPassword")
-            }
 
             url = System.getProperty("snapshot") == "true" ? snapshotMavenRepoDeployUrl : mavenRepoDeployUrl
             credentials {
