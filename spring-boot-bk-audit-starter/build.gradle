@@ -109,19 +109,21 @@ publishing {
                 snapshotMavenRepoPassword = project.findProperty("SNAPSHOT_MAVEN_REPO_PASSWORD")
             }
 
+            def isSnapshot = project.property('version').toString().endsWith("SNAPSHOT")
 
-            url = System.getProperty("snapshot") == "true" ? snapshotMavenRepoDeployUrl : mavenRepoDeployUrl
+            url = isSnapshot ? snapshotMavenRepoDeployUrl : mavenRepoDeployUrl
+            println("Publish to url:" + url)
             credentials {
-                username = System.getProperty("snapshot") == "true" ? snapshotMavenRepoUsername : mavenRepoUsername
-                password = System.getProperty("snapshot") == "true" ? snapshotMavenRepoPassword : mavenRepoPassword
+                username = isSnapshot ? snapshotMavenRepoUsername : mavenRepoUsername
+                password = isSnapshot ? snapshotMavenRepoPassword : mavenRepoPassword
             }
         }
     }
 }
 
-signing {
-    sign publishing.publications.mavenJava
-}
+//signing {
+//    sign publishing.publications.mavenJava
+//}
 
 publish.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
 generateMetadataFileForMavenJavaPublication.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
@@ -129,4 +131,4 @@ generatePomFileForMavenJavaPublication.onlyIf { !sourceSets.main.allSource.files
 publishMavenJavaPublicationToMavenCentralRepository.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
 publishMavenJavaPublicationToMavenLocal.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
 publishToMavenLocal.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
-signMavenJavaPublication.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
+//signMavenJavaPublication.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
