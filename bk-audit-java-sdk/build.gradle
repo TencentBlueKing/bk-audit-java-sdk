@@ -107,9 +107,9 @@ publishing {
     }
 }
 
-//signing {
-//    sign publishing.publications.mavenJava
-//}
+signing {
+    sign publishing.publications.mavenJava
+}
 
 publish.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
 generateMetadataFileForMavenJavaPublication.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
@@ -117,6 +117,6 @@ generatePomFileForMavenJavaPublication.onlyIf { !sourceSets.main.allSource.files
 publishMavenJavaPublicationToMavenCentralRepository.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
 publishMavenJavaPublicationToMavenLocal.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
 publishToMavenLocal.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
-//signMavenJavaPublication.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
+signMavenJavaPublication.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
 
 
