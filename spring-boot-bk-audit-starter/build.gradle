@@ -28,6 +28,7 @@ dependencies {
     testImplementation("org.springframework:spring-webmvc")
     testImplementation("org.assertj:assertj-core")
     testImplementation("org.mockito:mockito-core")
+    testImplementation("org.yaml:snakeyaml:1.29")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     compileOnly("org.projectlombok:lombok")
     testCompileOnly("org.projectlombok:lombok")

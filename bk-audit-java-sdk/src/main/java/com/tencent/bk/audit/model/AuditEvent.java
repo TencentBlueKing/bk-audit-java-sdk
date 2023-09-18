@@ -65,7 +65,13 @@ public class AuditEvent {
     private Long endTime;
 
     /**
-     * 事件上报模块
+     * 事件上报系统
+     */
+    @JsonProperty("system_id")
+    private String systemId;
+
+    /**
+     * 事件上报模块。一个 system_id 可能对应多个 bk_app_code
      */
     @JsonProperty("bk_app_code")
     private String bkAppCode;

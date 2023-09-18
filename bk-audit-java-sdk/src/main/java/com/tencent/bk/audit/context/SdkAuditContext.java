@@ -28,6 +28,8 @@ public class SdkAuditContext implements AuditContext {
 
     private Long endTime;
 
+    private final String systemId;
+
     private final String bkAppCode;
 
     private final AccessTypeEnum accessType;
@@ -73,6 +75,7 @@ public class SdkAuditContext implements AuditContext {
                     String username,
                     UserIdentifyTypeEnum userIdentifyType,
                     String userIdentifyTenantId,
+                    String systemId,
                     String bkAppCode,
                     AccessTypeEnum accessType,
                     String accessSourceIp,
@@ -85,6 +88,7 @@ public class SdkAuditContext implements AuditContext {
         this.userIdentifyType = userIdentifyType;
         this.userIdentifyTenantId = userIdentifyTenantId;
         this.startTime = System.currentTimeMillis();
+        this.systemId = systemId;
         this.bkAppCode = bkAppCode;
         this.accessType = accessType;
         this.accessSourceIp = accessSourceIp;
@@ -116,6 +120,8 @@ public class SdkAuditContext implements AuditContext {
         Map<AuditEventKey, AuditEvent> auditEvents = new HashMap<>();
         if (isFail()) {
             AuditEvent auditEvent = new AuditEvent(actionId);
+            auditEvent.setSystemId(systemId);
+            auditEvent.setBkAppCode(bkAppCode);
             auditEvent.setStartTime(startTime);
             auditEvent.setEndTime(endTime);
             auditEvent.setResultCode(resultCode);
@@ -143,6 +149,7 @@ public class SdkAuditContext implements AuditContext {
 
     private void addContextAttributes(AuditEvent auditEvent) {
         auditEvent.setRequestId(requestId);
+        auditEvent.setSystemId(systemId);
         auditEvent.setBkAppCode(bkAppCode);
 
         if (StringUtils.isEmpty(auditEvent.getId())) {
@@ -248,6 +255,11 @@ public class SdkAuditContext implements AuditContext {
     @Override
     public String getBkAppCode() {
         return bkAppCode;
+    }
+
+    @Override
+    public String getSystemId() {
+        return null;
     }
 
     @Override

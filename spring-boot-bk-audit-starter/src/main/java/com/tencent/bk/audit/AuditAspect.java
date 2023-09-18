@@ -2,6 +2,7 @@ package com.tencent.bk.audit;
 
 import com.tencent.bk.audit.annotations.AuditEntry;
 import com.tencent.bk.audit.annotations.AuditRequestBody;
+import com.tencent.bk.audit.config.AuditProperties;
 import com.tencent.bk.audit.context.AuditContext;
 import com.tencent.bk.audit.model.AuditHttpRequest;
 import com.tencent.bk.audit.model.ErrorInfo;
@@ -28,14 +29,16 @@ public class AuditAspect {
     private final AuditClient auditClient;
     private final AuditRequestProvider auditRequestProvider;
     private final AuditExceptionResolver auditExceptionResolver;
-
+    private final AuditProperties auditProperties;
 
     public AuditAspect(AuditClient auditClient,
                        AuditRequestProvider auditRequestProvider,
-                       AuditExceptionResolver auditExceptionResolver) {
+                       AuditExceptionResolver auditExceptionResolver,
+                       AuditProperties auditProperties) {
         this.auditClient = auditClient;
         this.auditRequestProvider = auditRequestProvider;
         this.auditExceptionResolver = auditExceptionResolver;
+        this.auditProperties = auditProperties;
         log.info("Init AuditAspect success");
     }
 
@@ -71,7 +74,8 @@ public class AuditAspect {
                 .setAccessSourceIp(auditRequestProvider.getClientIp())
                 .setUserIdentifyType(auditRequestProvider.getUserIdentifyType())
                 .setUserIdentifyTenantId(auditRequestProvider.getUserIdentifyTenantId())
-                .setBkAppCode(auditRequestProvider.getBkAppCode())
+                .setBkAppCode(auditProperties.getBkAppCode())
+                .setSystemId(auditProperties.getSystemId())
                 .setRequestId(auditRequestProvider.getRequestId())
                 .setAccessUserAgent(auditRequestProvider.getUserAgent())
                 .setHttpRequest(parseRequest(jp, method, auditRequestProvider.getRequest()))

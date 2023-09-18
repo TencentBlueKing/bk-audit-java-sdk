@@ -21,7 +21,6 @@ public class DefaultAuditRequestProvider implements AuditRequestProvider {
     public static final String HEADER_USER_IDENTIFY_TYPE = "X-User-Identify-Type";
     public static final String HEADER_ACCESS_TYPE = "X-Access-Type";
     public static final String HEADER_REQUEST_ID = "X-Request-Id";
-    public static final String HEADER_BK_APP_CODE = "X-Bk-App-Code";
 
     @Override
     public AuditHttpRequest getRequest() {
@@ -66,12 +65,6 @@ public class DefaultAuditRequestProvider implements AuditRequestProvider {
     public String getRequestId() {
         HttpServletRequest httpServletRequest = getHttpServletRequest();
         return httpServletRequest.getHeader(HEADER_REQUEST_ID);
-    }
-
-    @Override
-    public String getBkAppCode() {
-        HttpServletRequest httpServletRequest = getHttpServletRequest();
-        return httpServletRequest.getHeader(HEADER_BK_APP_CODE);
     }
 
     @Override

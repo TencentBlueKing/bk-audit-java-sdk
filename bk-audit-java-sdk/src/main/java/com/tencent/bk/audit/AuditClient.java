@@ -137,7 +137,6 @@ public class AuditClient {
 
     private void makeAuditContextCurrent(AuditContext auditContext) {
         if (LazyAuditContextHolder.get().current() != null) {
-            log.error("Current audit context is already exist.");
             return;
         }
         LazyAuditContextHolder.get().set(auditContext);

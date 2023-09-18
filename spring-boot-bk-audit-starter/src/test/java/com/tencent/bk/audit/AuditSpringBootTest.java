@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -33,6 +35,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@TestPropertySource(locations = "classpath:/application.yml")
 @AutoConfigureMockMvc
 public class AuditSpringBootTest {
 
@@ -74,6 +77,8 @@ public class AuditSpringBootTest {
         AuditEvent auditEvent = auditEvents.stream().findAny().orElse(null);
         assertThat(auditEvent).isNotNull();
         assertNotNull(auditEvent.getId());
+        assertEquals("bk_job", auditEvent.getSystemId());
+        assertEquals("bk_job", auditEvent.getBkAppCode());
         assertEquals("view_job_template", auditEvent.getActionId());
         assertEquals("job_template", auditEvent.getResourceTypeId());
         assertEquals("1", auditEvent.getInstanceId());
@@ -125,6 +130,8 @@ public class AuditSpringBootTest {
         AuditEvent auditEvent = auditEvents.stream().findAny().orElse(null);
         assertThat(auditEvent).isNotNull();
         assertNotNull(auditEvent.getId());
+        assertEquals("bk_job", auditEvent.getSystemId());
+        assertEquals("bk_job", auditEvent.getBkAppCode());
         assertEquals("create_job_template", auditEvent.getActionId());
         assertEquals("job_template", auditEvent.getResourceTypeId());
         assertEquals(String.valueOf(createdJobTemplate.getId()), auditEvent.getInstanceId());
@@ -177,6 +184,8 @@ public class AuditSpringBootTest {
         assertThat(mainEvents).hasSize(1);
         AuditEvent mainEvent = mainEvents.get(0);
         assertThat(mainEvent).isNotNull();
+        assertEquals("bk_job", mainEvent.getSystemId());
+        assertEquals("bk_job", mainEvent.getBkAppCode());
         assertEquals(mainEvent.getInstanceId(), "1000");
         assertEquals(mainEvent.getInstanceName(), "job_template_1000");
         assertEquals(mainEvent.getResourceTypeId(), "job_template");
@@ -194,6 +203,8 @@ public class AuditSpringBootTest {
 
         auditEvents.forEach(auditEvent -> {
             assertThat(auditEvent).isNotNull();
+            assertEquals("bk_job", auditEvent.getSystemId());
+            assertEquals("bk_job", auditEvent.getBkAppCode());
             assertNotNull(auditEvent.getId());
             assertEquals("bk_audit_event", auditEvent.getAuditEventSignature());
             assertEquals(Constants.RESULT_CODE_SUCCESS, auditEvent.getResultCode());
@@ -241,6 +252,8 @@ public class AuditSpringBootTest {
         assertThat(auditEvents).hasSize(1);
         AuditEvent auditEvent = auditEvents.stream().findAny().orElse(null);
         assertThat(auditEvent).isNotNull();
+        assertEquals("bk_job", auditEvent.getSystemId());
+        assertEquals("bk_job", auditEvent.getBkAppCode());
         assertNotNull(auditEvent.getId());
         assertEquals("execute_script", auditEvent.getActionId());
         assertEquals("host", auditEvent.getResourceTypeId());

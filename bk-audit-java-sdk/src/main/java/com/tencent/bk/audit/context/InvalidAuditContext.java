@@ -110,4 +110,9 @@ public class InvalidAuditContext implements AuditContext {
     public AuditHttpRequest getHttpRequest() {
         return null;
     }
+
+    @Override
+    public String getSystemId() {
+        return null;
+    }
 }

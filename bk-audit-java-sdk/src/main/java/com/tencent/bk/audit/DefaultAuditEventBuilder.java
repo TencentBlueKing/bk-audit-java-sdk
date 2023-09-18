@@ -8,7 +8,6 @@ import com.tencent.bk.audit.utils.EventIdGenerator;
 import com.tencent.bk.audit.utils.VariableResolver;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,36 +29,31 @@ public class DefaultAuditEventBuilder implements AuditEventBuilder {
         List<AuditEvent> events = new ArrayList<>();
 
         List<String> instanceIdList = actionAuditContext.getInstanceIdList();
-        if (StringUtils.isNotBlank(actionAuditContext.getResourceType())) {
-            if (CollectionUtils.isNotEmpty(instanceIdList)) {
-                List<String> instanceNameList = actionAuditContext.getInstanceNameList();
-                List<Object> originInstanceList = actionAuditContext.getOriginInstanceList();
-                List<Object> instanceList = actionAuditContext.getInstanceList();
+        if (CollectionUtils.isNotEmpty(instanceIdList)) {
+            List<String> instanceNameList = actionAuditContext.getInstanceNameList();
+            List<Object> originInstanceList = actionAuditContext.getOriginInstanceList();
+            List<Object> instanceList = actionAuditContext.getInstanceList();
 
-                for (int index = 0; index < instanceIdList.size(); index++) {
-                    String instanceId = safeGetElement(instanceIdList, index);
-                    String instanceName = safeGetElement(instanceNameList, index);
-                    Object originInstance = safeGetElement(originInstanceList, index);
-                    Object instance = safeGetElement(instanceList, index);
-                    Map<String, Object> attributes = addInstanceAttributes(
-                            actionAuditContext.getAttributes(), instanceId, instanceName);
-                    AuditEvent auditEvent = buildAuditEvent(instanceId, instanceName, originInstance, instance,
-                            attributes);
-                    events.add(auditEvent);
-                }
+            for (int index = 0; index < instanceIdList.size(); index++) {
+                String instanceId = safeGetElement(instanceIdList, index);
+                String instanceName = safeGetElement(instanceNameList, index);
+                Object originInstance = safeGetElement(originInstanceList, index);
+                Object instance = safeGetElement(instanceList, index);
+                Map<String, Object> attributes = buildMergedEventAttributes(instanceId, instanceName);
+                AuditEvent auditEvent = buildAuditEvent(instanceId, instanceName, originInstance, instance,
+                        attributes);
+                events.add(auditEvent);
             }
         } else {
             AuditEvent auditEvent = buildAuditEvent(null, null, null, null,
                     actionAuditContext.getAttributes());
             events.add(auditEvent);
         }
-
         return events;
     }
 
-    private Map<String, Object> addInstanceAttributes(Map<String, Object> auditContextAttributes,
-                                                      String instanceId,
-                                                      String instanceName) {
+    private Map<String, Object> buildMergedEventAttributes(String instanceId,
+                                                           String instanceName) {
         Map<String, Object> attributeMap = new HashMap<>();
         attributeMap.put(AuditAttributeNames.INSTANCE_ID, instanceId);
         attributeMap.put(AuditAttributeNames.INSTANCE_NAME, instanceName);
@@ -78,7 +72,7 @@ public class DefaultAuditEventBuilder implements AuditEventBuilder {
                                          String instanceName,
                                          Object originInstance,
                                          Object instance,
-                                         Map<String, Object> eventAttributes) {
+                                         Map<String, Object> attributes) {
         AuditEvent auditEvent = buildBasicAuditEvent();
 
         // 审计记录 - 原始数据
@@ -88,13 +82,13 @@ public class DefaultAuditEventBuilder implements AuditEventBuilder {
 
         auditEvent.setInstanceId(instanceId);
         auditEvent.setInstanceName(instanceName);
-        auditEvent.setContent(resolveAttributes(actionAuditContext.getContent(),
-                eventAttributes));
+        auditEvent.setContent(resolveAttributes(actionAuditContext.getContent(), attributes));
         return auditEvent;
     }
 
     protected AuditEvent buildBasicAuditEvent() {
         AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setId(EventIdGenerator.generateId());
         auditEvent.setId(EventIdGenerator.generateId());
         auditEvent.setActionId(actionAuditContext.getActionId());
         auditEvent.setResourceTypeId(actionAuditContext.getResourceType());

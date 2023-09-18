@@ -25,6 +25,7 @@ public class SubAuditEventExample {
     public void run() {
         // 构造审计上下文
         AuditContext auditContext = auditClient.auditContextBuilder("delete_job_template")
+                .setSystemId("bk_job")
                 .setSubActionIds(Collections.singletonList("delete_job_plan"))
                 .setRequestId("3a84858499bd71d674bc40d4f73cb41a")
                 .setAccessSourceIp("127.0.0.1")
