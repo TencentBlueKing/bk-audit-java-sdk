@@ -89,7 +89,6 @@ public class DefaultAuditEventBuilder implements AuditEventBuilder {
     protected AuditEvent buildBasicAuditEvent() {
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setId(EventIdGenerator.generateId());
-        auditEvent.setId(EventIdGenerator.generateId());
         auditEvent.setActionId(actionAuditContext.getActionId());
         auditEvent.setResourceTypeId(actionAuditContext.getResourceType());
         auditEvent.setStartTime(actionAuditContext.getStartTime());

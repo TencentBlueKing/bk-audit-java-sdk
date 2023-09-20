@@ -152,6 +152,10 @@ implementation 'com.tencent.bk.sdk:spring-boot-bk-audit-starter:1.0.0'
 - logback.xml
 
 ```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 审计日志样式 -->
+    <property name="AUDIT_EVENT_LOG_PATTERN" value="%m%n"/>
     <!-- 审计事件日志 Appender -->
     <appender name="audit-event-appender" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${AUDIT_EVENT_LOG_FILE}</file>
@@ -171,6 +175,7 @@ implementation 'com.tencent.bk.sdk:spring-boot-bk-audit-starter:1.0.0'
     <logger name="bk_audit" level="INFO" additivity="false">
         <appender-ref ref="audit-event-appender"/>
     </logger>
+</configuration>
 ```
 
 
@@ -536,5 +541,121 @@ public class JobExecuteService {
 
 ## 最佳实践
 1. 对于传统的 MVC 三层架构：
-   - 查询资源操作，最好在 Controller 层的声明审计操作。因为如果在 Service 层，查询操作会被其他类型的操作依赖（比如修改资源之前可能会先查询资源），就会产生多余的审计事件。
-   - 对于增删改操作，建议在 Service 层声明审计操作。因为大部分增删改操作都需要被审计，即使是被依赖调用的情况下
+   - 在 Controller 层使用 @AuditEntry 注解声明审计请求入口，尽早创建审计上下文；这样, 即使请求执行过程中出现异常, 审计事件仍然能够被记录下来
+   - 建议在 Service 层使用 @ActionAuditRecord 注解声明审计操作，代码可以复用
+2. @ActionAuditRecord 最好是只注解在用户态方法上，避免产生多余的审计事件（比如系统内部调用触发）。所以，在 @Service 实现类中，区分用户态方法（用户直接触发，会进行鉴权、审计等操作）与内部使用的方法（直接执行业务逻辑，跳过审计、鉴权等前置检查）。例如：
+```java
+/**
+ * 业务脚本 Service
+ */
+@Slf4j
+@Service
+public class ScriptServiceImpl implements ScriptService {
+    
+    // 用户查看作业脚本操作，需要鉴权、审计
+    @Override
+    @ActionAuditRecord(
+        actionId = ActionId.VIEW_SCRIPT,
+        instance = @AuditInstanceRecord(
+            resourceType = ResourceTypeId.SCRIPT,
+            instanceIds = "#scriptId",
+            instanceNames = "#$?.name"
+        ),
+        content = EventContentConstants.VIEW_SCRIPT
+    )
+    public ScriptDTO getScript(String username, Long appId, String scriptId) {
+        // 操作鉴权
+        authViewScript(username, appId, scriptId);
+        // 调用 getScript(Long appId, String scriptId) 内部方法实现
+        return getScript(appId, scriptId);
+    }
+    
+    // 内部获取业务脚本信息，不需要鉴权、审计
+    @Override
+    public ScriptDTO getScript(Long appId, String scriptId) {
+        return scriptManager.getScript(appId, scriptId);
+    }
+
+}
+```
+
+3. 为了尽可能的使用注解 @ActionAuditRecord 实现无代码侵入式的审计操作记录，对于资源操作的实现方法最好能遵循如下规范：
+- 查询操作返回当前资源实例
+- 新建操作返回创建的资源实例
+- 更新操作返回更新之后的资源实例
+```java
+/**
+ * 业务脚本 Service
+ */
+@Slf4j
+@Service
+public class ScriptServiceImpl implements ScriptService {
+    
+    // 查看业务脚本
+    @Override
+    @ActionAuditRecord(
+        actionId = ActionId.VIEW_SCRIPT,
+        instance = @AuditInstanceRecord(
+            resourceType = ResourceTypeId.SCRIPT,
+            instanceIds = "#scriptId",
+            instanceNames = "#$?.name"
+        ),
+        content = EventContentConstants.VIEW_SCRIPT
+    )
+    public ScriptDTO getScript(String username, Long appId, String scriptId) {
+        authViewScript(username, appId, scriptId);
+        return getScript(appId, scriptId);
+    }
+    
+    // 创建业务脚本
+    @Override
+    @ActionAuditRecord(
+        actionId = ActionId.CREATE_SCRIPT,
+        instance = @AuditInstanceRecord(
+            resourceType = ResourceTypeId.SCRIPT,
+            instanceIds = "#$?.id",
+            instanceNames = "#$?.name"
+        ),
+        content = EventContentConstants.CREATE_SCRIPT
+    )
+    public ScriptDTO createScript(String username, ScriptDTO script) {
+        authCreateScript(username, script.getAppId());
+        ScriptDTO newScript = scriptManager.createScript(script);
+        scriptAuthService.registerScript(newScript.getId(), newScript.getName(), username);
+        return newScript;
+    }
+    
+    // 更新业务脚本
+    @Override
+    @ActionAuditRecord(
+        actionId = ActionId.MANAGE_SCRIPT,
+        instance = @AuditInstanceRecord(
+            resourceType = ResourceTypeId.SCRIPT
+        ),
+        content = EventContentConstants.EDIT_SCRIPT
+    )
+    public ScriptDTO updateScriptName(Long appId, String username, String scriptId, String newName) {
+        authManageScript(username, appId, scriptId);
+
+        ScriptDTO originScript = getScript(appId, scriptId);
+        if (originScript == null) {
+            throw new NotFoundException(ErrorCode.SCRIPT_NOT_EXIST);
+        }
+
+        ScriptDTO updateScript = scriptManager.updateScriptName(username, appId, scriptId, newName);
+
+        addModifyScriptAuditInfo(originScript, updateScript);
+
+        return updateScript;
+    }
+
+    private void addModifyScriptAuditInfo(ScriptDTO originScript, ScriptDTO updateScript) {
+        // 审计
+        ActionAuditContext.current()
+            .setInstanceId(originScript.getId())
+            .setInstanceName(originScript.getName())
+            .setOriginInstance(originScript.toEsbScriptV3DTO())
+            .setInstance(updateScript.toEsbScriptV3DTO());
+    }
+}
+````
