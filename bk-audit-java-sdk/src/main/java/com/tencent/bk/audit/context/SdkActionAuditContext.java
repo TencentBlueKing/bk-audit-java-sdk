@@ -234,20 +234,21 @@ public class SdkActionAuditContext implements ActionAuditContext {
                                               String instanceName,
                                               Object originInstance,
                                               Object instance) {
-        addInstanceToList(instanceId, instanceIdList);
-        addInstanceToList(instanceName, instanceNameList);
-        addInstanceToList(originInstance, originInstanceList);
-        addInstanceToList(instance, instanceList);
+        instanceIdList = addInstanceToList(instanceId, instanceIdList);
+        instanceNameList = addInstanceToList(instanceName, instanceNameList);
+        originInstanceList = addInstanceToList(originInstance, originInstanceList);
+        instanceList = addInstanceToList(instance, instanceList);
         return this;
     }
 
-    private <E> void addInstanceToList(E instance, List<E> instanceList) {
+    private <E> List<E> addInstanceToList(E instance, List<E> instanceList) {
         if (instance != null) {
             if (instanceList == null) {
                 instanceList = new ArrayList<>();
             }
             instanceList.add(instance);
         }
+        return instanceList;
     }
 
     @Override
