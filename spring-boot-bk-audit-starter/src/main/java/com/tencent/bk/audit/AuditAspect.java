@@ -59,6 +59,9 @@ public class AuditAspect {
             Method method = ((MethodSignature) jp.getSignature()).getMethod();
             AuditEntry record = method.getAnnotation(AuditEntry.class);
             startAudit(jp, method, record);
+        } catch (Throwable e) {
+            // 忽略审计错误，避免影响业务代码执行
+            log.error("Start audit context caught exception", e);
         } finally {
             if (log.isDebugEnabled()) {
                 log.debug("Audit start, cost: {}", System.currentTimeMillis() - start);
@@ -112,6 +115,9 @@ public class AuditAspect {
         long start = System.currentTimeMillis();
         try {
             auditClient.stopAudit();
+        } catch (Throwable e) {
+            // 忽略审计错误，避免影响业务代码执行
+            log.error("Stop audit context caught exception", e);
         } finally {
             if (log.isDebugEnabled()) {
                 log.debug("Stop audit, entry: {}, cost: {}", jp.getSignature().toShortString(),
