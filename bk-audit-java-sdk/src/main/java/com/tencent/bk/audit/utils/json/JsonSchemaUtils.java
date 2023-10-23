@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
+import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
+import com.tencent.bk.audit.exception.AuditException;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -11,7 +13,13 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class JsonSchemaUtils {
-    private static final JsonSchemaGenerator JSON_SCHEMA_GENERATOR = new JsonSchemaGenerator((ObjectMapper) null);
+    private static final JsonSchemaGenerator JSON_SCHEMA_GENERATOR;
+
+    static {
+        ObjectMapper objectMapper = new ObjectMapper();
+        SchemaFactoryWrapper wrapper = new SchemaFactoryWrapper();
+        JSON_SCHEMA_GENERATOR = new JsonSchemaGenerator(objectMapper, wrapper);
+    }
 
     /**
      * 生成 POJO 的JsonSchema
@@ -23,8 +31,7 @@ public class JsonSchemaUtils {
         try {
             return JSON_SCHEMA_GENERATOR.generateSchema(pojoClass);
         } catch (JsonMappingException e) {
-            log.error("Generate json schema caught exception", e);
-            return null;
+            throw new AuditException("Generate json schema caught exception", e);
         }
     }
 }
