@@ -9,10 +9,7 @@ import com.tencent.bk.audit.utils.VariableResolver;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 默认的审计事件生成Builder
@@ -26,6 +23,10 @@ public class DefaultAuditEventBuilder implements AuditEventBuilder {
 
     @Override
     public List<AuditEvent> build() {
+        if (actionAuditContext.isDisabled()) {
+            return Collections.emptyList();
+        }
+
         List<AuditEvent> events = new ArrayList<>();
 
         List<String> instanceIdList = actionAuditContext.getInstanceIdList();
