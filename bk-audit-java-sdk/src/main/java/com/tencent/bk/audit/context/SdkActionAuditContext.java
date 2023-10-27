@@ -71,6 +71,11 @@ public class SdkActionAuditContext implements ActionAuditContext {
      */
     private final List<AuditEvent> events = new ArrayList<>();
 
+    /**
+     * 操作上下文是否被废弃
+     */
+    private boolean disabled;
+
     SdkActionAuditContext(String actionId,
                           String resourceType,
                           List<String> instanceIdList,
@@ -252,6 +257,17 @@ public class SdkActionAuditContext implements ActionAuditContext {
     }
 
     @Override
+    public ActionAuditContext disable() {
+        this.disabled = true;
+        return this;
+    }
+
+    @Override
+    public boolean isDisabled() {
+        return this.disabled;
+    }
+
+    @Override
     public String toString() {
         return new StringJoiner(", ", SdkActionAuditContext.class.getSimpleName() + "[", "]")
                 .add("actionId='" + actionId + "'")
@@ -266,6 +282,7 @@ public class SdkActionAuditContext implements ActionAuditContext {
                 .add("eventBuilderClass=" + eventBuilderClass)
                 .add("attributes=" + attributes)
                 .add("events=" + events)
+                .add("disabled=" + disabled)
                 .toString();
     }
 }

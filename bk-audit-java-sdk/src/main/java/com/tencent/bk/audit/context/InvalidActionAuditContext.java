@@ -127,4 +127,14 @@ public class InvalidActionAuditContext implements ActionAuditContext {
                                               Object instance) {
         return this;
     }
+
+    @Override
+    public ActionAuditContext disable() {
+        return this;
+    }
+
+    @Override
+    public boolean isDisabled() {
+        return true;
+    }
 }

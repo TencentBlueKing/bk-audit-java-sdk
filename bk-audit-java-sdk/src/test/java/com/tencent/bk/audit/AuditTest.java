@@ -5,6 +5,7 @@ import com.tencent.bk.audit.constants.Constants;
 import com.tencent.bk.audit.constants.UserIdentifyTypeEnum;
 import com.tencent.bk.audit.context.ActionAuditContext;
 import com.tencent.bk.audit.context.AuditContext;
+import com.tencent.bk.audit.example.DisableActionAuditContextExample;
 import com.tencent.bk.audit.example.MultiAuditEventExample;
 import com.tencent.bk.audit.example.SingleAuditEventExample;
 import com.tencent.bk.audit.example.SubAuditEventExample;
@@ -227,6 +228,15 @@ public class AuditTest {
         assertEquals(Constants.RESULT_ERROR_DESC, auditEvent.getResultContent());
         assertNotNull(auditEvent.getStartTime());
         assertNotNull(auditEvent.getEndTime());
+    }
+
+    @Test
+    @DisplayName("验证审计 - 手动废弃操作上下文，将不会产生审计事件")
+    void whenDisableActionAuditContextThenDoNotBuildAuditEvent() {
+        DisableActionAuditContextExample example = new DisableActionAuditContextExample(auditClient);
+        example.run();
+
+        verify(eventExporter, never()).export(anyList());
     }
 
 

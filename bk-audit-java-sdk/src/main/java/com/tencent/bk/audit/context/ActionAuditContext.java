@@ -120,4 +120,14 @@ public interface ActionAuditContext {
     ActionAuditContext setInstance(Object instance);
 
     ActionAuditContext addInstanceInfo(String instanceId, String instanceName, Object originInstance, Object instance);
+
+    /**
+     * 设置为 disabled 状态，该操作上下文将不会生效和产生审计事件
+     */
+    ActionAuditContext disable();
+
+    /**
+     * 操作上下文是否被废弃
+     */
+    boolean isDisabled();
 }
