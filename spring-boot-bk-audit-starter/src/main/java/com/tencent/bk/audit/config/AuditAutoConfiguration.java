@@ -4,7 +4,10 @@ import com.tencent.bk.audit.*;
 import com.tencent.bk.audit.constants.ExporterTypeEnum;
 import com.tencent.bk.audit.exporter.EventExporter;
 import com.tencent.bk.audit.exporter.LogFileEventExporter;
+import com.tencent.bk.audit.metrics.AuditMetrics;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -54,14 +57,22 @@ public class AuditAutoConfiguration {
     public AuditAspect auditRecordAspect(AuditClient auditClient,
                                          AuditRequestProvider auditRequestProvider,
                                          AuditExceptionResolver auditExceptionResolver,
-                                         AuditProperties auditProperties) {
+                                         AuditProperties auditProperties,
+                                         AuditMetrics auditMetrics) {
         log.info("Init AuditAspect");
-        return new AuditAspect(auditClient, auditRequestProvider, auditExceptionResolver, auditProperties);
+        return new AuditAspect(auditClient, auditRequestProvider, auditExceptionResolver,
+                auditProperties, auditMetrics);
     }
 
     @Bean
-    public ActionAuditAspect actionAuditRecordAspect(AuditClient auditClient) {
+    public ActionAuditAspect actionAuditRecordAspect(AuditClient auditClient, AuditMetrics auditMetrics) {
         log.info("Init ActionAuditAspect");
-        return new ActionAuditAspect(auditClient);
+        return new ActionAuditAspect(auditClient, auditMetrics);
+    }
+
+    @Bean
+    public AuditMetrics auditMetrics(ObjectProvider<MeterRegistry> meterRegistryObjectProvider) {
+        log.info("Init AuditMetrics");
+        return new AuditMetrics(meterRegistryObjectProvider.getIfAvailable());
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.UUID;
 
 /**
  * 默认的 AuditRequestProvider 实现。可以通过继承 DefaultAuditRequestProvider 自定义 AuditRequestProvider
@@ -63,8 +64,13 @@ public class DefaultAuditRequestProvider implements AuditRequestProvider {
 
     @Override
     public String getRequestId() {
-        HttpServletRequest httpServletRequest = getHttpServletRequest();
-        return httpServletRequest.getHeader(HEADER_REQUEST_ID);
+        try {
+            HttpServletRequest httpServletRequest = getHttpServletRequest();
+            return httpServletRequest.getHeader(HEADER_REQUEST_ID);
+        } catch (Throwable e) {
+            log.error("Get request id error", e);
+            return UUID.randomUUID().toString().replace("-", "");
+        }
     }
 
     @Override
