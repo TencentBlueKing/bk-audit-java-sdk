@@ -51,9 +51,10 @@ public class AuditMetrics {
         if (requestId == null) {
             return;
         }
-        Boolean recordResult = auditRequestRecordResults.get(requestId);
-        if (recordResult == null) {
-            auditRequestRecordResults.put(requestId, recordResult);
+        Boolean auditSuccess = auditRequestRecordResults.get(requestId);
+        if (auditSuccess == null || auditSuccess) {
+            // 去重处理；如果该 requestId 已经被设置为异常记录，不能再重复记录"审计处理失败请求"指标
+            auditRequestRecordResults.put(requestId, false);
             this.auditExceptionRequestTotal.incrementAndGet();
         }
     }
