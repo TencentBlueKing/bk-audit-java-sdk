@@ -273,16 +273,17 @@ public class SdkActionAuditContext implements ActionAuditContext {
     }
 
     @Override
-    public void addExtendData(String key, Object value) {
+    public ActionAuditContext addExtendData(String key, Object value) {
         if (extendData == null) {
             extendData = new HashMap<>();
         }
         extendData.put(key, value);
+        return this;
     }
 
     @Override
     public Map<String, Object> getExtendData() {
-        return extendData == null ? null : Collections.unmodifiableMap(this.extendData);
+        return extendData;
     }
 
     @Override
