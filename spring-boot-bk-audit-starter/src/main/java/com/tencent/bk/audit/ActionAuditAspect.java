@@ -4,6 +4,8 @@ import com.tencent.bk.audit.annotations.ActionAuditRecord;
 import com.tencent.bk.audit.annotations.AuditAttribute;
 import com.tencent.bk.audit.context.ActionAuditContext;
 import com.tencent.bk.audit.context.ActionAuditScope;
+import com.tencent.bk.audit.context.AuditContext;
+import com.tencent.bk.audit.metrics.AuditMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ActionAuditAspect {
     private final AuditClient auditClient;
+    private final AuditMetrics auditMetrics;
 
     /**
      * 参数名发现
@@ -41,8 +44,9 @@ public class ActionAuditAspect {
      */
     private final SpelExpressionParser spelExpressionParser = new SpelExpressionParser();
 
-    public ActionAuditAspect(AuditClient auditClient) {
+    public ActionAuditAspect(AuditClient auditClient, AuditMetrics auditMetrics) {
         this.auditClient = auditClient;
+        this.auditMetrics = auditMetrics;
         log.info("Init ActionAuditAspect success");
     }
 
@@ -58,8 +62,10 @@ public class ActionAuditAspect {
         ActionAuditRecord record = null;
         ActionAuditScope scope = null;
         boolean isAuditRecording = false;
+        String requestId = null;
 
         try {
+            requestId = AuditContext.current().getRequestId();
             watch.start("ActionAuditStart");
             isAuditRecording = auditClient.isRecording();
             if (isAuditRecording) {
@@ -77,6 +83,7 @@ public class ActionAuditAspect {
             }
         } catch (Throwable e) {
             // 忽略审计错误，避免影响业务代码执行
+            auditMetrics.recordAuditExceptionRequest(requestId);
             log.error("Audit action caught exception", e);
         } finally {
             if (watch.isRunning()) {
@@ -101,6 +108,7 @@ public class ActionAuditAspect {
                     currentActionAuditContext.end();
                 } catch (Throwable e) {
                     // 忽略审计错误，避免影响业务代码执行
+                    auditMetrics.recordAuditExceptionRequest(requestId);
                     log.error("Audit action caught exception", e);
                 } finally {
                     if (scope != null) {
