@@ -1,12 +1,14 @@
 package com.tencent.bk.audit.metrics;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Slf4j
 public class AuditMetrics {
     private final AtomicLong auditRequestTotal = new AtomicLong(0);
     private final AtomicLong auditExceptionRequestTotal = new AtomicLong(0);
@@ -27,10 +29,13 @@ public class AuditMetrics {
 
     public AuditMetrics(MeterRegistry meterRegistry) {
         if (meterRegistry != null) {
+            log.info("Init AuditMetrics with MeterRegistry");
             meterRegistry.gauge(AUDIT_REQUEST_TOTAL, Collections.emptyList(), this,
                     AuditMetrics::getAuditRequestTotal);
             meterRegistry.gauge(AUDIT_EXCEPTION_REQUEST_TOTAL, Collections.emptyList(), this,
                     AuditMetrics::getAuditExceptionRequestTotal);
+        } else {
+            log.info("Init AuditMetrics without MeterRegistry");
         }
     }
 

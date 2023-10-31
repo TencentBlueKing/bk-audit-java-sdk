@@ -72,7 +72,6 @@ public class AuditAutoConfiguration {
 
     @Bean
     public AuditMetrics auditMetrics(ObjectProvider<MeterRegistry> meterRegistryObjectProvider) {
-        log.info("Init AuditMetrics");
         return new AuditMetrics(meterRegistryObjectProvider.getIfAvailable());
     }
 }

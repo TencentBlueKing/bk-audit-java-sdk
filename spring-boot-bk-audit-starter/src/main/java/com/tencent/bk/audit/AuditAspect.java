@@ -17,6 +17,7 @@ import org.springframework.core.annotation.Order;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.UUID;
 
 /**
  * 审计事件入口切入点。
@@ -60,7 +61,7 @@ public class AuditAspect {
         long start = System.currentTimeMillis();
         String requestId = null;
         try {
-            requestId = auditRequestProvider.getRequestId();
+            requestId = safelyGetRequestId();
             // 记录审计请求指标
             auditMetrics.recordAuditRequest(requestId);
 
@@ -76,6 +77,15 @@ public class AuditAspect {
             if (log.isDebugEnabled()) {
                 log.debug("Audit start, cost: {}", System.currentTimeMillis() - start);
             }
+        }
+    }
+
+    public String safelyGetRequestId() {
+        try {
+            return auditRequestProvider.getRequestId();
+        } catch (Throwable e) {
+            log.error("Get request id error, use default random uuid", e);
+            return UUID.randomUUID().toString().replace("-", "");
         }
     }
 
