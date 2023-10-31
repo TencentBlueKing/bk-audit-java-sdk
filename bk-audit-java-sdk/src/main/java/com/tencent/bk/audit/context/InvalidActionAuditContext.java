@@ -137,4 +137,19 @@ public class InvalidActionAuditContext implements ActionAuditContext {
     public boolean isDisabled() {
         return true;
     }
+
+    @Override
+    public void addExtendData(String key, Object value) {
+
+    }
+
+    @Override
+    public Map<String, Object> getExtendData() {
+        return null;
+    }
+
+    @Override
+    public Object getExtendDataValue(String key) {
+        return null;
+    }
 }

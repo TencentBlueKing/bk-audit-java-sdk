@@ -130,4 +130,14 @@ public interface ActionAuditContext {
      * 操作上下文是否被废弃
      */
     boolean isDisabled();
+
+    /**
+     * 添加扩展数据
+     */
+    void addExtendData(String key, Object value);
+
+    Map<String, Object> getExtendData();
+
+    Object getExtendDataValue(String key);
+
 }

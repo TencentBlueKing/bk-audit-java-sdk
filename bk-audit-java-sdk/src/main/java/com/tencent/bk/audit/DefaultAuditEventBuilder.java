@@ -42,12 +42,12 @@ public class DefaultAuditEventBuilder implements AuditEventBuilder {
                 Object instance = safeGetElement(instanceList, index);
                 Map<String, Object> attributes = buildMergedEventAttributes(instanceId, instanceName);
                 AuditEvent auditEvent = buildAuditEvent(instanceId, instanceName, originInstance, instance,
-                        attributes);
+                        attributes, actionAuditContext.getExtendData());
                 events.add(auditEvent);
             }
         } else {
             AuditEvent auditEvent = buildAuditEvent(null, null, null, null,
-                    actionAuditContext.getAttributes());
+                    actionAuditContext.getAttributes(), actionAuditContext.getExtendData());
             events.add(auditEvent);
         }
         return events;
@@ -73,7 +73,8 @@ public class DefaultAuditEventBuilder implements AuditEventBuilder {
                                          String instanceName,
                                          Object originInstance,
                                          Object instance,
-                                         Map<String, Object> attributes) {
+                                         Map<String, Object> attributes,
+                                         Map<String, Object> extendData) {
         AuditEvent auditEvent = buildBasicAuditEvent();
 
         // 审计记录 - 原始数据
@@ -84,6 +85,7 @@ public class DefaultAuditEventBuilder implements AuditEventBuilder {
         auditEvent.setInstanceId(instanceId);
         auditEvent.setInstanceName(instanceName);
         auditEvent.setContent(resolveAttributes(actionAuditContext.getContent(), attributes));
+        auditEvent.setExtendData(extendData);
         return auditEvent;
     }
 

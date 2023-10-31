@@ -67,6 +67,11 @@ public class SdkActionAuditContext implements ActionAuditContext {
     private final Map<String, Object> attributes;
 
     /**
+     * 审计事件拓展信息，各个系统可以根据具体需要扩展增加上报数据字段
+     */
+    private Map<String, Object> extendData;
+
+    /**
      * 当前操作产生的审计事件列表
      */
     private final List<AuditEvent> events = new ArrayList<>();
@@ -268,6 +273,24 @@ public class SdkActionAuditContext implements ActionAuditContext {
     }
 
     @Override
+    public void addExtendData(String key, Object value) {
+        if (extendData == null) {
+            extendData = new HashMap<>();
+        }
+        extendData.put(key, value);
+    }
+
+    @Override
+    public Map<String, Object> getExtendData() {
+        return extendData == null ? null : Collections.unmodifiableMap(this.extendData);
+    }
+
+    @Override
+    public Object getExtendDataValue(String key) {
+        return extendData == null ? null : extendData.get(key);
+    }
+
+    @Override
     public String toString() {
         return new StringJoiner(", ", SdkActionAuditContext.class.getSimpleName() + "[", "]")
                 .add("actionId='" + actionId + "'")
@@ -283,6 +306,7 @@ public class SdkActionAuditContext implements ActionAuditContext {
                 .add("attributes=" + attributes)
                 .add("events=" + events)
                 .add("disabled=" + disabled)
+                .add("extendData=" + extendData)
                 .toString();
     }
 }
