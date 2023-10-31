@@ -134,7 +134,7 @@ public interface ActionAuditContext {
     /**
      * 添加扩展数据
      */
-    void addExtendData(String key, Object value);
+    ActionAuditContext addExtendData(String key, Object value);
 
     Map<String, Object> getExtendData();
 

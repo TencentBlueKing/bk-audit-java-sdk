@@ -139,8 +139,8 @@ public class InvalidActionAuditContext implements ActionAuditContext {
     }
 
     @Override
-    public void addExtendData(String key, Object value) {
-
+    public ActionAuditContext addExtendData(String key, Object value) {
+        return this;
     }
 
     @Override
