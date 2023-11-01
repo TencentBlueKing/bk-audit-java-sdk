@@ -17,7 +17,6 @@ import org.springframework.core.annotation.Order;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.UUID;
 
 /**
  * 审计事件入口切入点。
@@ -59,37 +58,24 @@ public class AuditAspect {
         }
 
         long start = System.currentTimeMillis();
-        String requestId = null;
         try {
-            requestId = safelyGetRequestId();
-            // 记录审计请求指标
-            auditMetrics.recordAuditRequest(requestId);
-
             Method method = ((MethodSignature) jp.getSignature()).getMethod();
             AuditEntry record = method.getAnnotation(AuditEntry.class);
-            startAudit(jp, method, record, requestId);
+            startAudit(jp, method, record);
         } catch (Throwable e) {
             // 忽略审计错误，避免影响业务代码执行
-            // 记录审计请求指标
-            auditMetrics.recordAuditExceptionRequest(requestId);
             log.error("Start audit context caught exception", e);
+            // 记录审计请求指标
+            auditMetrics.recordAuditException(safeGetActionId());
         } finally {
             if (log.isDebugEnabled()) {
                 log.debug("Audit start, cost: {}", System.currentTimeMillis() - start);
             }
+            auditMetrics.recordAuditRequest(AuditContext.current().getActionId());
         }
     }
 
-    public String safelyGetRequestId() {
-        try {
-            return auditRequestProvider.getRequestId();
-        } catch (Throwable e) {
-            log.error("Get request id error, use default random uuid", e);
-            return UUID.randomUUID().toString().replace("-", "");
-        }
-    }
-
-    private void startAudit(JoinPoint jp, Method method, AuditEntry record, String requestId) {
+    private void startAudit(JoinPoint jp, Method method, AuditEntry record) {
         AuditContext auditContext = auditClient.auditContextBuilder(record.actionId())
                 .setSubActionIds(record.subActionIds().length == 0 ? null : Arrays.asList(record.subActionIds()))
                 .setUsername(auditRequestProvider.getUsername())
@@ -99,7 +85,7 @@ public class AuditAspect {
                 .setUserIdentifyTenantId(auditRequestProvider.getUserIdentifyTenantId())
                 .setBkAppCode(auditProperties.getBkAppCode())
                 .setSystemId(auditProperties.getSystemId())
-                .setRequestId(requestId)
+                .setRequestId(auditRequestProvider.getRequestId())
                 .setAccessUserAgent(auditRequestProvider.getUserAgent())
                 .setHttpRequest(parseRequest(jp, method, auditRequestProvider.getRequest()))
                 .build();
@@ -133,20 +119,27 @@ public class AuditAspect {
     @After(value = "auditEntry()")
     public void stopAudit(JoinPoint jp) {
         long start = System.currentTimeMillis();
-        String requestId = null;
+        String actionId = safeGetActionId();
         try {
-            requestId = AuditContext.current().getRequestId();
             auditClient.stopAudit();
         } catch (Throwable e) {
             // 忽略审计错误，避免影响业务代码执行
-            auditMetrics.recordAuditExceptionRequest(requestId);
+            auditMetrics.recordAuditException(actionId);
             log.error("Stop audit context caught exception", e);
         } finally {
             if (log.isDebugEnabled()) {
                 log.debug("Stop audit, entry: {}, cost: {}", jp.getSignature().toShortString(),
                         System.currentTimeMillis() - start);
             }
-            auditMetrics.clearAuditRequestTmpData(requestId);
+        }
+    }
+
+    private String safeGetActionId() {
+        try {
+            return AuditContext.current().getActionId();
+        } catch (Throwable e) {
+            log.error("Get action id from audit context exception", e);
+            return null;
         }
     }
 

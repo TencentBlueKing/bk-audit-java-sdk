@@ -1,76 +1,60 @@
 package com.tencent.bk.audit.metrics;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Tags;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 public class AuditMetrics {
-    private final AtomicLong auditRequestTotal = new AtomicLong(0);
-    private final AtomicLong auditExceptionRequestTotal = new AtomicLong(0);
-    /**
-     * 审计操作记录结果
-     * key: audit request id ; value: 审计记录结果。成功：true，失败：false
-     */
-    private final Map<String, Boolean> auditRequestRecordResults = new ConcurrentHashMap<>();
 
     /**
      * 指标 - 触发审计操作的请求总数
      */
     private final String AUDIT_REQUEST_TOTAL = "audit_request_total";
     /**
-     * 指标 - 审计操作记录失败总请求书
+     * 指标 - 审计操作记录失败总数
      */
-    private final String AUDIT_EXCEPTION_REQUEST_TOTAL = "audit_exception_request_total";
+    private final String AUDIT_EXCEPTION_TOTAL = "audit_exception_total";
+
+    private final MeterRegistry meterRegistry;
 
     public AuditMetrics(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+    }
+
+    /**
+     * 记录审计操作请求数量
+     *
+     * @param actionId 操作 ID
+     */
+    public void recordAuditRequest(String actionId) {
         if (meterRegistry != null) {
-            log.info("Init AuditMetrics with MeterRegistry");
-            meterRegistry.gauge(AUDIT_REQUEST_TOTAL, Collections.emptyList(), this,
-                    AuditMetrics::getAuditRequestTotal);
-            meterRegistry.gauge(AUDIT_EXCEPTION_REQUEST_TOTAL, Collections.emptyList(), this,
-                    AuditMetrics::getAuditExceptionRequestTotal);
+            meterRegistry.counter(AUDIT_REQUEST_TOTAL, buildTags(actionId)).increment();
         } else {
-            log.info("Init AuditMetrics without MeterRegistry");
+            if (log.isDebugEnabled()) {
+                log.debug("MeterRegistry is not available, skip record audit metrics");
+            }
         }
     }
 
-    public void recordAuditRequest(String requestId) {
-        if (requestId == null) {
-            return;
-        }
-        auditRequestRecordResults.put(requestId, true);
-        this.auditRequestTotal.incrementAndGet();
+    private Iterable<Tag> buildTags(String actionId) {
+        return Tags.of("action", StringUtils.isEmpty(actionId) ? "Unknown" : actionId);
     }
 
-    public void recordAuditExceptionRequest(String requestId) {
-        if (requestId == null) {
-            return;
+    /**
+     * 记录审计日志记录异常数量
+     *
+     * @param actionId 操作 ID
+     */
+    public void recordAuditException(String actionId) {
+        if (meterRegistry != null) {
+            meterRegistry.counter(AUDIT_EXCEPTION_TOTAL, buildTags(actionId)).increment();
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("MeterRegistry is not available, skip record audit metrics");
+            }
         }
-        Boolean auditSuccess = auditRequestRecordResults.get(requestId);
-        if (auditSuccess == null || auditSuccess) {
-            // 去重处理；如果该 requestId 已经被设置为异常记录，不能再重复记录"审计处理失败请求"指标
-            auditRequestRecordResults.put(requestId, false);
-            this.auditExceptionRequestTotal.incrementAndGet();
-        }
-    }
-
-    public void clearAuditRequestTmpData(String requestId) {
-        if (requestId == null) {
-            return;
-        }
-        auditRequestRecordResults.remove(requestId);
-    }
-
-    public long getAuditRequestTotal() {
-        return auditRequestTotal.get();
-    }
-
-    public long getAuditExceptionRequestTotal() {
-        return auditExceptionRequestTotal.get();
     }
 }

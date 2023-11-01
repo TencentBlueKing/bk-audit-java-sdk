@@ -4,7 +4,6 @@ import com.tencent.bk.audit.annotations.ActionAuditRecord;
 import com.tencent.bk.audit.annotations.AuditAttribute;
 import com.tencent.bk.audit.context.ActionAuditContext;
 import com.tencent.bk.audit.context.ActionAuditScope;
-import com.tencent.bk.audit.context.AuditContext;
 import com.tencent.bk.audit.metrics.AuditMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -62,10 +61,8 @@ public class ActionAuditAspect {
         ActionAuditRecord record = null;
         ActionAuditScope scope = null;
         boolean isAuditRecording = false;
-        String requestId = null;
 
         try {
-            requestId = AuditContext.current().getRequestId();
             watch.start("ActionAuditStart");
             isAuditRecording = auditClient.isRecording();
             if (isAuditRecording) {
@@ -83,7 +80,7 @@ public class ActionAuditAspect {
             }
         } catch (Throwable e) {
             // 忽略审计错误，避免影响业务代码执行
-            auditMetrics.recordAuditExceptionRequest(requestId);
+            auditMetrics.recordAuditException(safeGetActionId());
             log.error("Audit action caught exception", e);
         } finally {
             if (watch.isRunning()) {
@@ -108,7 +105,7 @@ public class ActionAuditAspect {
                     currentActionAuditContext.end();
                 } catch (Throwable e) {
                     // 忽略审计错误，避免影响业务代码执行
-                    auditMetrics.recordAuditExceptionRequest(requestId);
+                    auditMetrics.recordAuditException(safeGetActionId());
                     log.error("Audit action caught exception", e);
                 } finally {
                     if (scope != null) {
@@ -123,8 +120,15 @@ public class ActionAuditAspect {
                 }
             }
         }
+    }
 
-
+    private String safeGetActionId() {
+        try {
+            return ActionAuditContext.current().getActionId();
+        } catch (Throwable e) {
+            log.error("Get action id from action audit context exception", e);
+            return null;
+        }
     }
 
     private void parseActionAuditRecordSpEL(ProceedingJoinPoint pjp,
