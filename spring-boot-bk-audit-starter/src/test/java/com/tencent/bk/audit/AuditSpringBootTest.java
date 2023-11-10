@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -58,7 +57,7 @@ public class AuditSpringBootTest {
     public void testSimpleAudit1() throws Exception {
         String requestId = UUID.randomUUID().toString();
         this.mockMvc.perform(
-                get("/test/audit/action/getJobTemplateById/template/1")
+                get("/test/audit/action/scope/biz/2/template/1")
                         .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler")
                         .header(DefaultAuditRequestProvider.HEADER_REQUEST_ID, requestId)
                         .header(DefaultAuditRequestProvider.HEADER_ACCESS_TYPE, AccessTypeEnum.WEB.getValue())
@@ -95,7 +94,8 @@ public class AuditSpringBootTest {
         assertEquals(Constants.RESULT_SUCCESS_DESC, auditEvent.getResultContent());
         assertNotNull(auditEvent.getStartTime());
         assertNotNull(auditEvent.getEndTime());
-
+        assertEquals("biz", auditEvent.getScopeType());
+        assertEquals("2", auditEvent.getScopeId());
     }
 
     @Test
@@ -106,7 +106,7 @@ public class AuditSpringBootTest {
         request.setName("test_audit_create_job_template");
         request.setDescription("test_audit_create_job_template_desc");
         MvcResult mockResult = this.mockMvc.perform(
-                post("/test/audit/action/createJobTemplate")
+                post("/test/audit/action/scope/biz/2/template")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.toJson(request))
                         .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler")
@@ -150,6 +150,9 @@ public class AuditSpringBootTest {
         assertEquals(Constants.RESULT_SUCCESS_DESC, auditEvent.getResultContent());
         assertNotNull(auditEvent.getStartTime());
         assertNotNull(auditEvent.getEndTime());
+        assertEquals("biz", auditEvent.getScopeType());
+        assertEquals("2", auditEvent.getScopeId());
+
 
     }
 
@@ -159,7 +162,7 @@ public class AuditSpringBootTest {
     public void testAuditMultiAction() throws Exception {
         String requestId = UUID.randomUUID().toString();
         this.mockMvc.perform(
-                delete("/test/audit/action/deleteJobTemplate/template/1000")
+                delete("/test/audit/action/scope/biz/2/template/1000")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler")
                         .header(DefaultAuditRequestProvider.HEADER_REQUEST_ID, requestId)
@@ -217,6 +220,8 @@ public class AuditSpringBootTest {
             assertNotNull(auditEvent.getAccessSourceIp());
             assertEquals("Chrome", auditEvent.getAccessUserAgent());
             assertEquals(AccessTypeEnum.WEB.getValue(), auditEvent.getAccessType());
+            assertEquals("biz", auditEvent.getScopeType());
+            assertEquals("2", auditEvent.getScopeId());
         });
     }
 
@@ -271,5 +276,51 @@ public class AuditSpringBootTest {
         assertEquals(Constants.RESULT_SUCCESS_DESC, auditEvent.getResultContent());
         assertNotNull(auditEvent.getStartTime());
         assertNotNull(auditEvent.getEndTime());
+    }
+
+    @Test
+    @DisplayName("测试 AuditPostFilter 自动注册并生效")
+    public void testAuditPostFilter() throws Exception {
+        String requestId = UUID.randomUUID().toString();
+        this.mockMvc.perform(
+                get("/test/audit/action/scope/biz/2/template/1")
+                        .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler")
+                        .header(DefaultAuditRequestProvider.HEADER_REQUEST_ID, requestId)
+                        .header(DefaultAuditRequestProvider.HEADER_ACCESS_TYPE, AccessTypeEnum.WEB.getValue())
+                        .header(DefaultAuditRequestProvider.HEADER_USER_IDENTIFY_TYPE,
+                                UserIdentifyTypeEnum.PERSONAL.getValue())
+                        .header("User-Agent", "Chrome")
+                        .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler"))
+                .andExpect(status().isOk());
+
+        ArgumentCaptor<Collection<AuditEvent>> argument = ArgumentCaptor.forClass(Collection.class);
+        verify(eventExporter).export(argument.capture());
+        verify(eventExporter).export(anyList());
+
+        Collection<AuditEvent> auditEvents = argument.getValue();
+        assertThat(auditEvents).hasSize(1);
+        AuditEvent auditEvent = auditEvents.stream().findAny().orElse(null);
+        assertThat(auditEvent).isNotNull();
+        assertNotNull(auditEvent.getId());
+        assertEquals("bk_job", auditEvent.getSystemId());
+        assertEquals("bk_job", auditEvent.getBkAppCode());
+        assertEquals("view_job_template", auditEvent.getActionId());
+        assertEquals("job_template", auditEvent.getResourceTypeId());
+        assertEquals("1", auditEvent.getInstanceId());
+        assertEquals("job_template_1", auditEvent.getInstanceName());
+        assertEquals(requestId, auditEvent.getRequestId());
+        assertEquals("tyler", auditEvent.getUsername());
+        assertEquals(UserIdentifyTypeEnum.PERSONAL.getValue(), auditEvent.getUserIdentifyType());
+        assertNotNull(auditEvent.getAccessSourceIp());
+        assertEquals("Chrome", auditEvent.getAccessUserAgent());
+        assertEquals(AccessTypeEnum.WEB.getValue(), auditEvent.getAccessType());
+        assertEquals("View job template [job_template_1](1)", auditEvent.getContent());
+        assertEquals("bk_audit_event", auditEvent.getAuditEventSignature());
+        assertEquals(Constants.RESULT_CODE_SUCCESS, auditEvent.getResultCode());
+        assertEquals(Constants.RESULT_SUCCESS_DESC, auditEvent.getResultContent());
+        assertNotNull(auditEvent.getStartTime());
+        assertNotNull(auditEvent.getEndTime());
+        // 验证在 filter 中加入的扩展数据 "test" 的值
+        assertEquals("SpringBootAuditPostFilterTest", auditEvent.getExtendData().get("test"));
     }
 }

@@ -51,6 +51,8 @@ public class SubAuditEventExample {
                 .setInstanceId("1000")
                 .setInstanceName("job_template_1")
                 .setContent("Delete job template [{{" + INSTANCE_NAME + "}}]({{" + INSTANCE_ID + "}})")
+                .setScopeType("biz")
+                .setScopeId("2")
                 .build()
                 .wrapActionRunnable(() -> {
                     //  action code
@@ -66,6 +68,8 @@ public class SubAuditEventExample {
                 .setInstanceIdList(Arrays.asList("1001", "1002"))
                 .setInstanceNameList(Arrays.asList("plan1", "plan2"))
                 .setContent("Delete job plan [{{" + INSTANCE_NAME + "}}]({{" + INSTANCE_ID + "}})")
+                .setScopeType("biz")
+                .setScopeId("2")
                 .build()
                 .wrapActionRunnable(() -> {
                     //  action code

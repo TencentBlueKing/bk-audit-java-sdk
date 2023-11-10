@@ -44,6 +44,8 @@ public class MultiAuditEventExample {
                 .setInstanceIdList(Arrays.asList("1000", "1001"))
                 .setInstanceNameList(Arrays.asList("plan1", "plan2"))
                 .setContent("Edit job plan [{{" + INSTANCE_NAME + "}}]({{" + INSTANCE_ID + "}})")
+                .setScopeType("biz")
+                .setScopeId("2")
                 .build()
                 .wrapActionRunnable(() -> {
                     //  action code

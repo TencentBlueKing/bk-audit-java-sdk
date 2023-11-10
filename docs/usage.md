@@ -527,6 +527,21 @@ public class JobExecuteService {
 }
 ```
 
+#### AuditPostFilter
+如果需要在审计结束之前修改审计事件内容，可以自定义 com.tencent.bk.audit.filter.AuditPostFilter 并声明为 Spring Component.
+
+```
+@Component
+public class CustomAuditPostFilter implements AuditPostFilter {
+
+    @Override
+    public AuditEvent map(AuditEvent auditEvent) {
+        // 对于生成的审计事件，添加自定义的扩展数据
+        auditEvent.addExtendData("test", "SpringBootAuditPostFilterTest");
+        return auditEvent;
+    }
+}
+```
 
 
 ## 示例代码

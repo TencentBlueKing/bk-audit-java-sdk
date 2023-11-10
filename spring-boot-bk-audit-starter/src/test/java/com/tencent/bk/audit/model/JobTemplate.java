@@ -1,8 +1,24 @@
 package com.tencent.bk.audit.model;
 
+/**
+ * 作业模版
+ */
 public class JobTemplate {
+    /**
+     * ID
+     */
     private Long id;
+    /**
+     * CMDB 业务 ID
+     */
+    private Long bizId;
+    /**
+     * 名称
+     */
     private String name;
+    /**
+     * 描述
+     */
     private String description;
 
     public Long getId() {
@@ -27,5 +43,13 @@ public class JobTemplate {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Long getBizId() {
+        return bizId;
+    }
+
+    public void setBizId(Long bizId) {
+        this.bizId = bizId;
     }
 }

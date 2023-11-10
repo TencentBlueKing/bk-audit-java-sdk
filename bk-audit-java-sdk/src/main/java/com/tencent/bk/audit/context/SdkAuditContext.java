@@ -4,9 +4,12 @@ import com.tencent.bk.audit.constants.AccessTypeEnum;
 import com.tencent.bk.audit.constants.AuditEventKey;
 import com.tencent.bk.audit.constants.Constants;
 import com.tencent.bk.audit.constants.UserIdentifyTypeEnum;
+import com.tencent.bk.audit.filter.AuditPostFilter;
+import com.tencent.bk.audit.filter.AuditPostFilters;
 import com.tencent.bk.audit.model.AuditEvent;
 import com.tencent.bk.audit.model.AuditHttpRequest;
 import com.tencent.bk.audit.utils.EventIdGenerator;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -111,6 +114,10 @@ public class SdkAuditContext implements AuditContext {
     public void end() {
         this.endTime = System.currentTimeMillis();
         buildAuditEvents();
+        List<AuditPostFilter> filters = AuditPostFilters.getFilters();
+        if (CollectionUtils.isNotEmpty(filters)) {
+            filters.forEach(filter -> this.events.forEach(filter::map));
+        }
     }
 
     private void buildAuditEvents() {

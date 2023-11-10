@@ -28,7 +28,7 @@ public class AuditEvent {
     @JsonProperty("event_content")
     private String content;
 
-    /**
+    /** 6；lL2
      * 请求ID
      */
     @JsonProperty("request_id")
@@ -150,6 +150,17 @@ public class AuditEvent {
 
     @JsonProperty("audit_event_signature")
     private String auditEventSignature = Constants.AUDIT_EVENT_SIGNATURE;
+    /**
+     * 管理空间类型（比如 project/biz等）
+     */
+    @JsonProperty("scope_type")
+    private String scopeType;
+
+    /**
+     * 管理空间ID（比如项目ID、cmdb业务ID）
+     */
+    @JsonProperty("scope_id")
+    private String scopeId;
 
     public AuditEvent() {
     }

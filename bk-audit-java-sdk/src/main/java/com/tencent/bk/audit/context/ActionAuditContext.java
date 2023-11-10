@@ -140,4 +140,13 @@ public interface ActionAuditContext {
 
     Object getExtendDataValue(String key);
 
+    ActionAuditContext setScopeType(String scopeType);
+
+    ActionAuditContext setScopeId(String scopeType);
+
+    String getScopeType();
+
+    String getScopeId();
+
+
 }

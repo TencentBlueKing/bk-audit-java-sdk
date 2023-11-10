@@ -38,21 +38,29 @@ public class AuditTestController {
                     instanceIds = "#templateId",
                     instanceNames = "#$?.name"
             ),
+            scopeType = "#scopeType",
+            scopeId = "#scopeId",
             content = "View job template [{{" + INSTANCE_NAME + "}}]({{" + INSTANCE_ID + "}})"
     )
-    @GetMapping("/getJobTemplateById/template/{templateId}")
-    public JobTemplate getJobTemplateById(@PathVariable("templateId") Long templateId) {
-        return jobTemplateService.getTemplateById(templateId);
+    @GetMapping("/scope/{scopeType}/{scopeId}/template/{templateId}")
+    public JobTemplate getJobTemplateById(
+            @PathVariable("scopeType") String scopeType,
+            @PathVariable("scopeId") String scopeId,
+            @PathVariable("templateId") Long templateId) {
+        return jobTemplateService.getTemplateById(Long.valueOf(scopeId), templateId);
     }
 
     @AuditEntry(
             actionId = "create_job_template"
     )
-    @PostMapping("/createJobTemplate")
-    public JobTemplate createJobTemplate(@AuditRequestBody
-                                         @RequestBody
-                                                 CreateJobTemplateRequest request) {
-        return jobTemplateService.createJobTemplate(request.getName(), request.getDescription());
+    @PostMapping("/scope/{scopeType}/{scopeId}/template")
+    public JobTemplate createJobTemplate(
+            @PathVariable("scopeType") String scopeType,
+            @PathVariable("scopeId") String scopeId,
+            @AuditRequestBody
+            @RequestBody
+                    CreateJobTemplateRequest request) {
+        return jobTemplateService.createJobTemplate(Long.valueOf(scopeId), request.getName(), request.getDescription());
     }
 
     /**
@@ -64,9 +72,12 @@ public class AuditTestController {
             actionId = "delete_job_template",
             subActionIds = "delete_job_plan"
     )
-    @DeleteMapping("/deleteJobTemplate/template/{templateId}")
-    public void deleteJobTemplate(@PathVariable("templateId") Long templateId) {
-        jobTemplateService.deleteJobTemplate(templateId);
+    @DeleteMapping("/scope/{scopeType}/{scopeId}/template/{templateId}")
+    public void deleteJobTemplate(
+            @PathVariable("scopeType") String scopeType,
+            @PathVariable("scopeId") String scopeId,
+            @PathVariable("templateId") Long templateId) {
+        jobTemplateService.deleteJobTemplate(Long.valueOf(scopeId), templateId);
     }
 
 

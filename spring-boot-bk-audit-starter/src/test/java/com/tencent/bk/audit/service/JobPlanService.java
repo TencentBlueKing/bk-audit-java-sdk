@@ -17,10 +17,11 @@ import static com.tencent.bk.audit.constants.AuditAttributeNames.INSTANCE_NAME;
 @Service
 public class JobPlanService {
 
-    public JobPlan getPlanById(long planId) {
+    public JobPlan getPlanById(Long bizId, long planId) {
         JobPlan plan = new JobPlan();
         plan.setId(planId);
         plan.setName(buildPlanName(planId));
+        plan.setBizId(bizId);
         return plan;
     }
 
@@ -49,10 +50,12 @@ public class JobPlanService {
                     instanceIds = "#planId",
                     instanceNames = "#$?.name"
             ),
+            scopeType = "'biz'",
+            scopeId = "#bizId",
             content = "Delete job plan [{{" + INSTANCE_NAME + "}}]({{" + INSTANCE_ID + "}})"
     )
-    public JobPlan deleteJobPlan(Long planId) {
-        JobPlan jobPlan = getPlanById(planId);
+    public JobPlan deleteJobPlan(Long bizId, Long planId) {
+        JobPlan jobPlan = getPlanById(bizId, planId);
         // delete plan code here
         return jobPlan;
     }

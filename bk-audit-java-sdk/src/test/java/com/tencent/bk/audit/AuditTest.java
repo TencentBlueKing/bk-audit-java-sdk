@@ -5,10 +5,7 @@ import com.tencent.bk.audit.constants.Constants;
 import com.tencent.bk.audit.constants.UserIdentifyTypeEnum;
 import com.tencent.bk.audit.context.ActionAuditContext;
 import com.tencent.bk.audit.context.AuditContext;
-import com.tencent.bk.audit.example.DisableActionAuditContextExample;
-import com.tencent.bk.audit.example.MultiAuditEventExample;
-import com.tencent.bk.audit.example.SingleAuditEventExample;
-import com.tencent.bk.audit.example.SubAuditEventExample;
+import com.tencent.bk.audit.example.*;
 import com.tencent.bk.audit.exporter.EventExporter;
 import com.tencent.bk.audit.model.AuditEvent;
 import org.junit.jupiter.api.AfterEach;
@@ -76,6 +73,8 @@ public class AuditTest {
         assertEquals(Constants.RESULT_SUCCESS_DESC, auditEvent.getResultContent());
         assertNotNull(auditEvent.getStartTime());
         assertNotNull(auditEvent.getEndTime());
+        assertEquals("biz", auditEvent.getScopeType());
+        assertEquals("2", auditEvent.getScopeId());
     }
 
     @Test
@@ -111,6 +110,8 @@ public class AuditTest {
             assertEquals(Constants.RESULT_SUCCESS_DESC, auditEvent.getResultContent());
             assertNotNull(auditEvent.getStartTime());
             assertNotNull(auditEvent.getEndTime());
+            assertEquals("biz", auditEvent.getScopeType());
+            assertEquals("2", auditEvent.getScopeId());
         });
     }
 
@@ -174,6 +175,8 @@ public class AuditTest {
             assertEquals(Constants.RESULT_SUCCESS_DESC, auditEvent.getResultContent());
             assertNotNull(auditEvent.getStartTime());
             assertNotNull(auditEvent.getEndTime());
+            assertEquals("biz", auditEvent.getScopeType());
+            assertEquals("2", auditEvent.getScopeId());
         });
     }
 
@@ -196,6 +199,8 @@ public class AuditTest {
                         .setInstanceId("1000")
                         .setInstanceName("test_audit_execute_job_plan")
                         .setContent("Execute job plan [{{" + INSTANCE_NAME + "}}]({{" + INSTANCE_ID + "}})")
+                        .setScopeType("biz")
+                        .setScopeId("2")
                         .build()
                         .wrapActionRunnable(() -> {
                             throw new RuntimeException("Execute job plan error");
@@ -237,6 +242,42 @@ public class AuditTest {
         example.run();
 
         verify(eventExporter, never()).export(anyList());
+    }
+
+    @Test
+    @DisplayName("验证AuditPostFilter")
+    void testAuditPostFilter() {
+        AuditPostFilterExample example = new AuditPostFilterExample(auditClient);
+        example.run();
+
+        ArgumentCaptor<Collection<AuditEvent>> argument = ArgumentCaptor.forClass(Collection.class);
+        verify(eventExporter).export(argument.capture());
+        verify(eventExporter).export(anyList());
+
+        Collection<AuditEvent> auditEvents = argument.getValue();
+        assertThat(auditEvents).hasSize(1);
+        AuditEvent auditEvent = auditEvents.stream().findAny().orElse(null);
+        assertThat(auditEvent).isNotNull();
+        assertNotNull(auditEvent.getId());
+        assertEquals("bk_job", auditEvent.getSystemId());
+        assertEquals("execute_job_plan", auditEvent.getActionId());
+        assertEquals("job_plan", auditEvent.getResourceTypeId());
+        assertEquals("1000", auditEvent.getInstanceId());
+        assertEquals("test_audit_execute_job_plan", auditEvent.getInstanceName());
+        assertEquals("3a84858499bd71d674bc40d4f73cb41a", auditEvent.getRequestId());
+        assertEquals("admin", auditEvent.getUsername());
+        assertEquals(UserIdentifyTypeEnum.PERSONAL.getValue(), auditEvent.getUserIdentifyType());
+        assertEquals("127.0.0.1", auditEvent.getAccessSourceIp());
+        assertEquals("Chrome", auditEvent.getAccessUserAgent());
+        assertEquals(AccessTypeEnum.CONSOLE.getValue(), auditEvent.getAccessType());
+        assertEquals("Execute job plan [test_audit_execute_job_plan](1000)", auditEvent.getContent());
+        assertEquals("bk_audit_event", auditEvent.getAuditEventSignature());
+        assertEquals(Constants.RESULT_CODE_SUCCESS, auditEvent.getResultCode());
+        assertEquals(Constants.RESULT_SUCCESS_DESC, auditEvent.getResultContent());
+        assertNotNull(auditEvent.getStartTime());
+        assertNotNull(auditEvent.getEndTime());
+        // 验证在 filter 中加入的扩展数据 "test" 的值
+        assertEquals("AuditPostFilterTest", auditEvent.getExtendData().get("test"));
     }
 
 

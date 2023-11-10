@@ -81,6 +81,16 @@ public class SdkActionAuditContext implements ActionAuditContext {
      */
     private boolean disabled;
 
+    /**
+     * 管理空间类型（比如 project/biz等）
+     */
+    private String scopeType;
+
+    /**
+     * 管理空间ID（比如项目ID、cmdb业务ID）
+     */
+    private String scopeId;
+
     SdkActionAuditContext(String actionId,
                           String resourceType,
                           List<String> instanceIdList,
@@ -89,7 +99,9 @@ public class SdkActionAuditContext implements ActionAuditContext {
                           List<Object> instanceList,
                           String content,
                           Class<? extends AuditEventBuilder> eventBuilderClass,
-                          Map<String, Object> attributes) {
+                          Map<String, Object> attributes,
+                          String scopeType,
+                          String scopeId) {
         this.actionId = actionId;
         this.startTime = System.currentTimeMillis();
         this.resourceType = resourceType;
@@ -100,6 +112,8 @@ public class SdkActionAuditContext implements ActionAuditContext {
         this.content = content;
         this.eventBuilderClass = eventBuilderClass == null ? DefaultAuditEventBuilder.class : eventBuilderClass;
         this.attributes = (attributes == null ? new HashMap<>() : attributes);
+        this.scopeType = scopeType;
+        this.scopeId = scopeId;
     }
 
     @Override
@@ -292,6 +306,28 @@ public class SdkActionAuditContext implements ActionAuditContext {
     }
 
     @Override
+    public ActionAuditContext setScopeType(String scopeType) {
+        this.scopeType = scopeType;
+        return this;
+    }
+
+    @Override
+    public ActionAuditContext setScopeId(String scopeId) {
+        this.scopeId = scopeId;
+        return this;
+    }
+
+    @Override
+    public String getScopeType() {
+        return this.scopeType;
+    }
+
+    @Override
+    public String getScopeId() {
+        return this.scopeId;
+    }
+
+    @Override
     public String toString() {
         return new StringJoiner(", ", SdkActionAuditContext.class.getSimpleName() + "[", "]")
                 .add("actionId='" + actionId + "'")
@@ -308,6 +344,8 @@ public class SdkActionAuditContext implements ActionAuditContext {
                 .add("events=" + events)
                 .add("disabled=" + disabled)
                 .add("extendData=" + extendData)
+                .add("scopeType=" + scopeType)
+                .add("scopeId=" + scopeId)
                 .toString();
     }
 }
