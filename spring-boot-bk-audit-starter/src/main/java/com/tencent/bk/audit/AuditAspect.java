@@ -36,7 +36,8 @@ public class AuditAspect {
     public AuditAspect(AuditClient auditClient,
                        AuditRequestProvider auditRequestProvider,
                        AuditExceptionResolver auditExceptionResolver,
-                       AuditProperties auditProperties, AuditMetrics auditMetrics) {
+                       AuditProperties auditProperties,
+                       AuditMetrics auditMetrics) {
         this.auditClient = auditClient;
         this.auditRequestProvider = auditRequestProvider;
         this.auditExceptionResolver = auditExceptionResolver;

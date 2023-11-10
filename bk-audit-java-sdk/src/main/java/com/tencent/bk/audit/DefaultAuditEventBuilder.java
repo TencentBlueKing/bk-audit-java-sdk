@@ -41,13 +41,29 @@ public class DefaultAuditEventBuilder implements AuditEventBuilder {
                 Object originInstance = safeGetElement(originInstanceList, index);
                 Object instance = safeGetElement(instanceList, index);
                 Map<String, Object> attributes = buildMergedEventAttributes(instanceId, instanceName);
-                AuditEvent auditEvent = buildAuditEvent(instanceId, instanceName, originInstance, instance,
-                        attributes, actionAuditContext.getExtendData());
+                AuditEvent auditEvent = buildAuditEvent(
+                        instanceId,
+                        instanceName,
+                        originInstance,
+                        instance,
+                        attributes,
+                        actionAuditContext.getExtendData(),
+                        actionAuditContext.getScopeType(),
+                        actionAuditContext.getScopeId()
+                );
                 events.add(auditEvent);
             }
         } else {
-            AuditEvent auditEvent = buildAuditEvent(null, null, null, null,
-                    actionAuditContext.getAttributes(), actionAuditContext.getExtendData());
+            AuditEvent auditEvent = buildAuditEvent(
+                    null,
+                    null,
+                    null,
+                    null,
+                    actionAuditContext.getAttributes(),
+                    actionAuditContext.getExtendData(),
+                    actionAuditContext.getScopeType(),
+                    actionAuditContext.getScopeId()
+            );
             events.add(auditEvent);
         }
         return events;
@@ -69,12 +85,14 @@ public class DefaultAuditEventBuilder implements AuditEventBuilder {
         return list != null && list.size() > index ? list.get(index) : null;
     }
 
-    protected AuditEvent buildAuditEvent(String instanceId,
-                                         String instanceName,
-                                         Object originInstance,
-                                         Object instance,
-                                         Map<String, Object> attributes,
-                                         Map<String, Object> extendData) {
+    private AuditEvent buildAuditEvent(String instanceId,
+                                       String instanceName,
+                                       Object originInstance,
+                                       Object instance,
+                                       Map<String, Object> attributes,
+                                       Map<String, Object> extendData,
+                                       String scopeType,
+                                       String scopeId) {
         AuditEvent auditEvent = buildBasicAuditEvent();
 
         // 审计记录 - 原始数据
@@ -86,6 +104,8 @@ public class DefaultAuditEventBuilder implements AuditEventBuilder {
         auditEvent.setInstanceName(instanceName);
         auditEvent.setContent(resolveAttributes(actionAuditContext.getContent(), attributes));
         auditEvent.setExtendData(extendData);
+        auditEvent.setScopeType(scopeType);
+        auditEvent.setScopeId(scopeId);
         return auditEvent;
     }
 

@@ -59,9 +59,10 @@ public class AuditClient {
 
             // 输出审计事件
             List<AuditEvent> auditEvents = currentAuditContext.getEvents();
-            if (CollectionUtils.isNotEmpty(auditEvents)) {
-                eventExporter.export(auditEvents);
+            if (CollectionUtils.isEmpty(auditEvents)) {
+                return;
             }
+            eventExporter.export(auditEvents);
         } finally {
             LazyAuditContextHolder.get().reset();
         }

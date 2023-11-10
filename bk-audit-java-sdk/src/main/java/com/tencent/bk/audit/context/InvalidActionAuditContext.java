@@ -152,4 +152,24 @@ public class InvalidActionAuditContext implements ActionAuditContext {
     public Object getExtendDataValue(String key) {
         return null;
     }
+
+    @Override
+    public ActionAuditContext setScopeType(String scopeType) {
+        return this;
+    }
+
+    @Override
+    public ActionAuditContext setScopeId(String scopeType) {
+        return this;
+    }
+
+    @Override
+    public String getScopeType() {
+        return null;
+    }
+
+    @Override
+    public String getScopeId() {
+        return null;
+    }
 }

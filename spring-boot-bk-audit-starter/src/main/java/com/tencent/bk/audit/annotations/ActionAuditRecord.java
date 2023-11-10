@@ -38,4 +38,14 @@ public @interface ActionAuditRecord {
      * 自定义审计事件Builder
      */
     Class<? extends AuditEventBuilder> builder() default DefaultAuditEventBuilder.class;
+
+    /**
+     * 管理空间类型（比如 project/biz等） - SpEL表达式
+     */
+    String scopeType() default "";
+
+    /**
+     * 管理空间ID（比如项目ID、cmdb业务ID） - SpEL表达式
+     */
+    String scopeId() default "";
 }

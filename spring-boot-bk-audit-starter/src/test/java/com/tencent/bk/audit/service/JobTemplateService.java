@@ -27,8 +27,9 @@ public class JobTemplateService {
         this.jobPlanService = jobPlanService;
     }
 
-    public JobTemplate getTemplateById(long templateId) {
+    public JobTemplate getTemplateById(Long bizId, long templateId) {
         JobTemplate template = new JobTemplate();
+        template.setBizId(bizId);
         template.setId(templateId);
         template.setName(buildTemplateName(templateId));
         template.setDescription("job_template_desc_" + templateId);
@@ -46,14 +47,17 @@ public class JobTemplateService {
                     instanceIds = "#$?.id",
                     instanceNames = "#$?.name"
             ),
+            scopeType = "'biz'",
+            scopeId = "#bizId",
             content = "Create job template [{{" + INSTANCE_NAME + "}}]({{" + INSTANCE_ID + "}})"
     )
-    public JobTemplate createJobTemplate(String templateName, String templateDesc) {
+    public JobTemplate createJobTemplate(Long bizId, String templateName, String templateDesc) {
         JobTemplate template = new JobTemplate();
         long templateId = Math.abs(random.nextLong());
         template.setId(templateId);
         template.setName(templateName);
         template.setDescription(templateDesc);
+        template.setBizId(bizId);
         return template;
     }
 
@@ -64,17 +68,19 @@ public class JobTemplateService {
                     instanceIds = "#templateId",
                     instanceNames = "#$?.name"
             ),
+            scopeType = "'biz'",
+            scopeId = "#bizId",
             content = "Delete job template [{{" + INSTANCE_NAME + "}}]({{" + INSTANCE_ID + "}})"
     )
-    public JobTemplate deleteJobTemplate(Long templateId) {
-        JobTemplate jobTemplate = getTemplateById(templateId);
-        deleteJobPlansByTemplateId(templateId);
+    public JobTemplate deleteJobTemplate(Long bizId, Long templateId) {
+        JobTemplate jobTemplate = getTemplateById(bizId, templateId);
+        deleteJobPlansByTemplateId(bizId, templateId);
         return jobTemplate;
     }
 
-    private void deleteJobPlansByTemplateId(long templateId) {
+    private void deleteJobPlansByTemplateId(Long bizId, long templateId) {
         List<JobPlan> planList = jobPlanService.getPlanByTemplateId(templateId);
-        planList.forEach(plan -> jobPlanService.deleteJobPlan(plan.getId()));
+        planList.forEach(plan -> jobPlanService.deleteJobPlan(bizId, plan.getId()));
     }
 
 

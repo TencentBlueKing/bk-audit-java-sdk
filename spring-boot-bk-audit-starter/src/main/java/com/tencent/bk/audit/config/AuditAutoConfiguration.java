@@ -4,6 +4,7 @@ import com.tencent.bk.audit.*;
 import com.tencent.bk.audit.constants.ExporterTypeEnum;
 import com.tencent.bk.audit.exporter.EventExporter;
 import com.tencent.bk.audit.exporter.LogFileEventExporter;
+import com.tencent.bk.audit.filter.AuditPostFilters;
 import com.tencent.bk.audit.metrics.AuditMetrics;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
@@ -73,5 +74,10 @@ public class AuditAutoConfiguration {
     @Bean
     public AuditMetrics auditMetrics(ObjectProvider<MeterRegistry> meterRegistryObjectProvider) {
         return new AuditMetrics(meterRegistryObjectProvider.getIfAvailable());
+    }
+
+    @Bean
+    public AuditApplicationRunner auditApplicationRunner() {
+        return new AuditApplicationRunner();
     }
 }

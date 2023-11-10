@@ -41,6 +41,8 @@ public class DisableActionAuditContextExample {
                 .setInstanceId("1000")
                 .setInstanceName("test_audit_execute_job_plan")
                 .setContent("Execute job plan [{{" + INSTANCE_NAME + "}}]({{" + INSTANCE_ID + "}})")
+                .setScopeType("biz")
+                .setScopeId("2")
                 .build()
                 .wrapActionRunnable(() -> {
                     // action code

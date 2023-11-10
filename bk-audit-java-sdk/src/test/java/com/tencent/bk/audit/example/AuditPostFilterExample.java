@@ -5,18 +5,28 @@ import com.tencent.bk.audit.constants.AccessTypeEnum;
 import com.tencent.bk.audit.constants.UserIdentifyTypeEnum;
 import com.tencent.bk.audit.context.ActionAuditContext;
 import com.tencent.bk.audit.context.AuditContext;
+import com.tencent.bk.audit.filter.AuditPostFilter;
+import com.tencent.bk.audit.filter.AuditPostFilters;
+import com.tencent.bk.audit.model.AuditEvent;
 
 import static com.tencent.bk.audit.constants.AuditAttributeNames.INSTANCE_ID;
 import static com.tencent.bk.audit.constants.AuditAttributeNames.INSTANCE_NAME;
 
 /**
- * 一次操作（请求）产生一个审计事件
+ * AuditPostFilter 的使用
  */
-public class SingleAuditEventExample {
+public class AuditPostFilterExample {
     private final AuditClient auditClient;
 
-    public SingleAuditEventExample(AuditClient auditClient) {
+    public AuditPostFilterExample(AuditClient auditClient) {
         this.auditClient = auditClient;
+        AuditPostFilters.addFilter(new AuditPostFilter() {
+            @Override
+            public AuditEvent map(AuditEvent auditEvent) {
+                auditEvent.addExtendData("test", "AuditPostFilterTest");
+                return auditEvent;
+            }
+        });
     }
 
     public void run() {
@@ -41,8 +51,6 @@ public class SingleAuditEventExample {
                 .setInstanceId("1000")
                 .setInstanceName("test_audit_execute_job_plan")
                 .setContent("Execute job plan [{{" + INSTANCE_NAME + "}}]({{" + INSTANCE_ID + "}})")
-                .setScopeType("biz")
-                .setScopeId("2")
                 .build()
                 .wrapActionRunnable(() -> {
                     // action code

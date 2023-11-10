@@ -149,6 +149,12 @@ public class ActionAuditAspect {
                 auditActionContext.addAttribute(auditAttribute.name(), value);
             }
         }
+        if (StringUtils.isNotEmpty(record.scopeType())) {
+            auditActionContext.setScopeType(parseBySpel(evaluationContext, record.scopeType()).toString());
+        }
+        if (StringUtils.isNotEmpty(record.scopeId())) {
+            auditActionContext.setScopeId((parseBySpel(evaluationContext, record.scopeId())).toString());
+        }
     }
 
     private void parseInstanceIdList(ActionAuditRecord record,

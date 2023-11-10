@@ -50,6 +50,16 @@ public class ActionAuditContextBuilder {
      */
     private Map<String, Object> attributes = new HashMap<>();
 
+    /**
+     * 管理空间类型（比如 project/biz等）
+     */
+    private String scopeType;
+
+    /**
+     * 管理空间ID（比如项目ID、cmdb业务ID）
+     */
+    private String scopeId;
+
     public static ActionAuditContextBuilder builder(String actionId) {
         return new ActionAuditContextBuilder(actionId);
     }
@@ -127,8 +137,18 @@ public class ActionAuditContextBuilder {
         return this;
     }
 
+    public ActionAuditContextBuilder setScopeType(String scopeType) {
+        this.scopeType = scopeType;
+        return this;
+    }
+
+    public ActionAuditContextBuilder setScopeId(String scopeId) {
+        this.scopeId = scopeId;
+        return this;
+    }
+
     public ActionAuditContext build() {
         return new SdkActionAuditContext(actionId, resourceType, instanceIdList, instanceNameList,
-                originInstanceList, instanceList, content, eventBuilder, attributes);
+                originInstanceList, instanceList, content, eventBuilder, attributes, scopeType, scopeId);
     }
 }
