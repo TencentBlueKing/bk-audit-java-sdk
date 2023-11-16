@@ -45,8 +45,8 @@ publishing {
                 }
             }
             pom {
-                name = 'spring-boot-bk-audit-starter'
-                description = 'Tencent BlueKing BK-Audit SDK spring boot starter'
+                name = 'bk-audit-java-sdk-core'
+                description = 'Tencent BlueKing BK-Audit Java SDK core'
                 url = 'https://github.com/TencentBlueKing/bk-audit-java-sdk'
                 licenses {
                     license {
