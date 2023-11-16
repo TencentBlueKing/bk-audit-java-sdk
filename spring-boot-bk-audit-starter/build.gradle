@@ -30,6 +30,7 @@ dependencies {
     testImplementation("org.assertj:assertj-core")
     testImplementation("org.mockito:mockito-core")
     testImplementation("org.yaml:snakeyaml:1.29")
+    testImplementation("org.hamcrest:hamcrest")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     compileOnly("org.projectlombok:lombok")
     testCompileOnly("org.projectlombok:lombok")
