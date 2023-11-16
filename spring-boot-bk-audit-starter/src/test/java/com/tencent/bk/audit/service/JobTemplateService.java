@@ -2,6 +2,7 @@ package com.tencent.bk.audit.service;
 
 import com.tencent.bk.audit.annotations.ActionAuditRecord;
 import com.tencent.bk.audit.annotations.AuditInstanceRecord;
+import com.tencent.bk.audit.exception.NotFoundException;
 import com.tencent.bk.audit.model.JobPlan;
 import com.tencent.bk.audit.model.JobTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,22 @@ public class JobTemplateService {
         this.jobPlanService = jobPlanService;
     }
 
+
+    @ActionAuditRecord(
+            actionId = "view_job_template",
+            instance = @AuditInstanceRecord(
+                    resourceType = "job_template",
+                    instanceIds = "#templateId",
+                    instanceNames = "#$?.name"
+            ),
+            scopeType = "'biz'",
+            scopeId = "#bizId",
+            content = "View job template [{{" + INSTANCE_NAME + "}}]({{" + INSTANCE_ID + "}})"
+    )
     public JobTemplate getTemplateById(Long bizId, long templateId) {
+        if (templateId == 0) {
+            throw new NotFoundException();
+        }
         JobTemplate template = new JobTemplate();
         template.setBizId(bizId);
         template.setId(templateId);
@@ -82,6 +98,4 @@ public class JobTemplateService {
         List<JobPlan> planList = jobPlanService.getPlanByTemplateId(templateId);
         planList.forEach(plan -> jobPlanService.deleteJobPlan(bizId, plan.getId()));
     }
-
-
 }

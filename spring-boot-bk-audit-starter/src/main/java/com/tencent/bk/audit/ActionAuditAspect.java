@@ -240,10 +240,8 @@ public class ActionAuditAspect {
                 context.setVariable(parameterNames[i], args[i]);
             }
         }
-
-        if (returnValue != null) {
-            context.setVariable("$", returnValue);
-        }
+        // 无论是否有方法返回值或者返回值为 null，都设置变量
+        context.setVariable("$", returnValue);
 
         return context;
     }

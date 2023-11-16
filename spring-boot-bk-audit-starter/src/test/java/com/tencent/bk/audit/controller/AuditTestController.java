@@ -1,8 +1,6 @@
 package com.tencent.bk.audit.controller;
 
-import com.tencent.bk.audit.annotations.ActionAuditRecord;
 import com.tencent.bk.audit.annotations.AuditEntry;
-import com.tencent.bk.audit.annotations.AuditInstanceRecord;
 import com.tencent.bk.audit.annotations.AuditRequestBody;
 import com.tencent.bk.audit.model.CreateJobTemplateRequest;
 import com.tencent.bk.audit.model.ExecuteScriptRequest;
@@ -11,9 +9,6 @@ import com.tencent.bk.audit.service.JobExecuteService;
 import com.tencent.bk.audit.service.JobTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import static com.tencent.bk.audit.constants.AuditAttributeNames.INSTANCE_ID;
-import static com.tencent.bk.audit.constants.AuditAttributeNames.INSTANCE_NAME;
 
 @RestController
 @RequestMapping("/test/audit/action")
@@ -30,17 +25,6 @@ public class AuditTestController {
 
     @AuditEntry(
             actionId = "view_job_template"
-    )
-    @ActionAuditRecord(
-            actionId = "view_job_template",
-            instance = @AuditInstanceRecord(
-                    resourceType = "job_template",
-                    instanceIds = "#templateId",
-                    instanceNames = "#$?.name"
-            ),
-            scopeType = "#scopeType",
-            scopeId = "#scopeId",
-            content = "View job template [{{" + INSTANCE_NAME + "}}]({{" + INSTANCE_ID + "}})"
     )
     @GetMapping("/scope/{scopeType}/{scopeId}/template/{templateId}")
     public JobTemplate getJobTemplateById(

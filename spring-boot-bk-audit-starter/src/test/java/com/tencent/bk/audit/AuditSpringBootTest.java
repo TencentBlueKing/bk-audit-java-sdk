@@ -3,6 +3,7 @@ package com.tencent.bk.audit;
 import com.tencent.bk.audit.constants.AccessTypeEnum;
 import com.tencent.bk.audit.constants.Constants;
 import com.tencent.bk.audit.constants.UserIdentifyTypeEnum;
+import com.tencent.bk.audit.exception.NotFoundException;
 import com.tencent.bk.audit.exporter.EventExporter;
 import com.tencent.bk.audit.model.*;
 import com.tencent.bk.audit.utils.json.JsonUtils;
@@ -26,12 +27,14 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 
 @SpringBootTest
 @TestPropertySource(locations = "classpath:/application.yml")
@@ -42,7 +45,8 @@ public class AuditSpringBootTest {
     private final EventExporter eventExporter;
 
     @Autowired
-    public AuditSpringBootTest(MockMvc mockMvc, EventExporter eventExporter) {
+    public AuditSpringBootTest(MockMvc mockMvc,
+                               EventExporter eventExporter) {
         this.mockMvc = mockMvc;
         this.eventExporter = eventExporter;
     }
@@ -322,5 +326,23 @@ public class AuditSpringBootTest {
         assertNotNull(auditEvent.getEndTime());
         // 验证在 filter 中加入的扩展数据 "test" 的值
         assertEquals("SpringBootAuditPostFilterTest", auditEvent.getExtendData().get("test"));
+    }
+
+    @Test
+    @DisplayName("审计操作 - 测试业务异常不会被审计框架捕获")
+    public void testDoNotCatchBusinessException() {
+        String requestId = UUID.randomUUID().toString();
+        assertThatThrownBy(() -> {
+            this.mockMvc.perform(
+                    //  传入 templateId=0, 触发业务的 NotFoundException
+                    get("/test/audit/action/scope/biz/2/template/0")
+                            .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler")
+                            .header(DefaultAuditRequestProvider.HEADER_REQUEST_ID, requestId)
+                            .header(DefaultAuditRequestProvider.HEADER_ACCESS_TYPE, AccessTypeEnum.WEB.getValue())
+                            .header(DefaultAuditRequestProvider.HEADER_USER_IDENTIFY_TYPE,
+                                    UserIdentifyTypeEnum.PERSONAL.getValue())
+                            .header("User-Agent", "Chrome")
+                            .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler"));
+        }).getCause().isInstanceOf(NotFoundException.class);
     }
 }
