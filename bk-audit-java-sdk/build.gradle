@@ -14,7 +14,7 @@ dependencies {
     implementation("org.apache.commons:commons-lang3")
     implementation("commons-collections:commons-collections")
     implementation("org.apache.commons:commons-collections4")
-    implementation("javax.servlet:javax.servlet-api")
+    implementation("jakarta.servlet:jakarta.servlet-api")
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testImplementation("org.assertj:assertj-core")
     testImplementation("org.mockito:mockito-core")
