@@ -11,7 +11,7 @@ description = "Blueking Audit Java SDK Build"
 ext {
     springVersion = "6.2.14"
     springBootVersion = "3.5.8"
-    aspectjVersion = "1.9.7"
+    aspectjVersion = "1.9.20"
     jacksonVersion = "2.16.2"
     slf4jVersion = "1.7.30"
     commonsLang3Version = "3.12.0"
@@ -89,6 +89,8 @@ allprojects {
     tasks.withType(JavaCompile).configureEach {
         options.encoding = "UTF-8"
         options.compilerArgs += ["-parameters"]
+        sourceCompatibility = 17
+        targetCompatibility = 17
     }
 
     tasks.withType(Javadoc) {
