@@ -5,6 +5,7 @@ plugins {
     id "idea"
     id "maven-publish"
     id "io.github.gradle-nexus.publish-plugin" version "2.0.0"
+    id 'com.dorongold.task-tree' version '2.0.1'
 }
 
 description = "Blueking Audit Java SDK Build"
