@@ -19,8 +19,8 @@ dependencies {
     implementation("org.apache.commons:commons-lang3")
     implementation("commons-collections:commons-collections")
     implementation("org.apache.commons:commons-collections4")
-    implementation("io.micrometer:micrometer-registry-prometheus:1.5.1")
     implementation("jakarta.servlet:jakarta.servlet-api")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.5.1")
     api(project(":bk-audit-java-sdk"))
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testImplementation("org.springframework.boot:spring-boot-test")
@@ -83,6 +83,44 @@ publishing {
             }
         }
     }
+
+    repositories {
+        maven {
+            name = 'MavenCentral'
+            // 正式包
+            def mavenRepoDeployUrl = System.getProperty("mavenRepoDeployUrl")
+            def mavenRepoUsername = System.getProperty("mavenRepoUsername")
+            def mavenRepoPassword = System.getProperty("mavenRepoPassword")
+
+            if (mavenRepoDeployUrl == null || mavenRepoDeployUrl.trim().length() == 0) {
+                // gradle.properties 中的 maven deploy repo
+                mavenRepoDeployUrl = project.findProperty("MAVEN_REPO_DEPLOY_URL")
+                mavenRepoUsername = project.findProperty("MAVEN_REPO_USERNAME")
+                mavenRepoPassword = project.findProperty("MAVEN_REPO_PASSWORD")
+            }
+
+            // 快照包
+            def snapshotMavenRepoDeployUrl = System.getProperty("snapshotMavenRepoDeployUrl")
+            def snapshotMavenRepoUsername = System.getProperty("snapshotMavenRepoUsername")
+            def snapshotMavenRepoPassword = System.getProperty("snapshotMavenRepoPassword")
+
+            if (snapshotMavenRepoDeployUrl == null || snapshotMavenRepoDeployUrl.trim().length() == 0) {
+                // gradle.properties 中的 snapshot maven deploy repo
+                snapshotMavenRepoDeployUrl = project.findProperty("SNAPSHOT_MAVEN_REPO_DEPLOY_URL")
+                snapshotMavenRepoUsername = project.findProperty("SNAPSHOT_MAVEN_REPO_USERNAME")
+                snapshotMavenRepoPassword = project.findProperty("SNAPSHOT_MAVEN_REPO_PASSWORD")
+            }
+
+            def isSnapshot = project.property('version').toString().endsWith("SNAPSHOT")
+
+            url = isSnapshot ? snapshotMavenRepoDeployUrl : mavenRepoDeployUrl
+            println("Publish to url:" + url)
+            credentials {
+                username = isSnapshot ? snapshotMavenRepoUsername : mavenRepoUsername
+                password = isSnapshot ? snapshotMavenRepoPassword : mavenRepoPassword
+            }
+        }
+    }
 }
 
 signing {
@@ -92,6 +130,7 @@ signing {
 publish.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
 generateMetadataFileForMavenJavaPublication.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
 generatePomFileForMavenJavaPublication.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
+publishMavenJavaPublicationToMavenCentralRepository.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
 publishMavenJavaPublicationToMavenLocal.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
 publishToMavenLocal.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
 signMavenJavaPublication.onlyIf { !sourceSets.main.allSource.files.isEmpty() }
