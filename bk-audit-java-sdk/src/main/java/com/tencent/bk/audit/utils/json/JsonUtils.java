@@ -3,8 +3,8 @@ package com.tencent.bk.audit.utils.json;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * JSON工具
@@ -12,7 +12,7 @@ import java.util.Map;
 @Slf4j
 public class JsonUtils {
 
-    private static final Map<String, JsonMapper> JSON_MAPPERS = new HashMap<>();
+    private static final Map<String, JsonMapper> JSON_MAPPERS = new ConcurrentHashMap<>();
 
     /**
      * 从Json串中解析成bean对象,支持参数泛型
