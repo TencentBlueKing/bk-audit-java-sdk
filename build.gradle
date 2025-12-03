@@ -4,6 +4,8 @@ plugins {
     id "java-library"
     id "idea"
     id "maven-publish"
+    id "io.github.gradle-nexus.publish-plugin" version "2.0.0"
+    id 'com.dorongold.task-tree' version '2.0.1'
 }
 
 description = "Blueking Audit Java SDK Build"
@@ -109,5 +111,53 @@ allprojects {
         logging.captureStandardOutput LogLevel.INFO
         options.encoding = "UTF-8"
         options.charSet = "UTF-8"
+    }
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            // 正式包
+            def mavenRepoDeployUrl = System.getProperty("mavenRepoDeployUrl")
+            def mavenRepoUsername = System.getProperty("mavenRepoUsername")
+            def mavenRepoPassword = System.getProperty("mavenRepoPassword")
+
+            if (mavenRepoDeployUrl == null || mavenRepoDeployUrl.trim().length() == 0) {
+                // 从环境变量读取
+                mavenRepoDeployUrl = System.getenv("MAVEN_REPO_DEPLOY_URL")
+                mavenRepoUsername = System.getenv("MAVEN_REPO_USERNAME")
+                mavenRepoPassword = System.getenv("MAVEN_REPO_PASSWORD")
+            }
+
+            if (mavenRepoDeployUrl == null || mavenRepoDeployUrl.trim().length() == 0) {
+                // gradle.properties 中的 maven deploy repo
+                mavenRepoDeployUrl = project.findProperty("MAVEN_REPO_DEPLOY_URL")
+                mavenRepoUsername = project.findProperty("MAVEN_REPO_USERNAME")
+                mavenRepoPassword = project.findProperty("MAVEN_REPO_PASSWORD")
+            }
+
+            // 快照包
+            def snapshotMavenRepoDeployUrl = System.getProperty("snapshotMavenRepoDeployUrl")
+            def snapshotMavenRepoUsername = System.getProperty("snapshotMavenRepoUsername")
+            def snapshotMavenRepoPassword = System.getProperty("snapshotMavenRepoPassword")
+
+            if (snapshotMavenRepoDeployUrl == null || snapshotMavenRepoDeployUrl.trim().length() == 0) {
+                // gradle.properties 中的 snapshot maven deploy repo
+                snapshotMavenRepoDeployUrl = project.findProperty("SNAPSHOT_MAVEN_REPO_DEPLOY_URL")
+                snapshotMavenRepoUsername = project.findProperty("SNAPSHOT_MAVEN_REPO_USERNAME")
+                snapshotMavenRepoPassword = project.findProperty("SNAPSHOT_MAVEN_REPO_PASSWORD")
+            }
+
+            def isSnapshot = project.property('version').toString().endsWith("SNAPSHOT")
+
+            def url = isSnapshot ? snapshotMavenRepoDeployUrl : mavenRepoDeployUrl
+            println("Publish to url:" + url)
+
+            nexusUrl = uri(mavenRepoDeployUrl == null ? "https://ossrh-staging-api.central.sonatype.com/service/local/" : mavenRepoDeployUrl)
+            snapshotRepositoryUrl = uri(snapshotMavenRepoDeployUrl == null ? "https://central.sonatype.com/repository/maven-snapshots/" : snapshotMavenRepoDeployUrl)
+
+            username = isSnapshot ? snapshotMavenRepoUsername : mavenRepoUsername
+            password = isSnapshot ? snapshotMavenRepoPassword : mavenRepoPassword
+        }
     }
 }
