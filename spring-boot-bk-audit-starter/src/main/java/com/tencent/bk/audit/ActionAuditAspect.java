@@ -17,7 +17,8 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.expression.spel.support.DataBindingMethodResolver;
+import org.springframework.expression.spel.support.SimpleEvaluationContext;
 import org.springframework.util.StopWatch;
 
 import java.lang.reflect.Method;
@@ -231,7 +232,15 @@ public class ActionAuditAspect {
     }
 
     private EvaluationContext buildEvaluationContext(JoinPoint jp, Method method, Object returnValue) {
-        EvaluationContext context = new StandardEvaluationContext();
+        // 使用 SimpleEvaluationContext 替代 StandardEvaluationContext，
+        // 禁用类型引用(T())、构造器(new)和静态方法调用，防止 SpEL 注入风险。
+        // 通过 DataBindingMethodResolver 允许实例方法调用（如 getter、业务方法），
+        // 但该 resolver 会自动屏蔽对 Class 类方法（如 forName、getMethod）的调用，阻断反射链攻击。
+        SimpleEvaluationContext context = SimpleEvaluationContext
+            .forReadWriteDataBinding()
+            .withMethodResolvers(DataBindingMethodResolver.forInstanceMethodInvocation())
+            .build();
+
         // 获取方法参数名，并设置方法参数到EvaluationContext
         String[] parameterNames = parameterNameDiscoverer.getParameterNames(method);
         if (parameterNames != null && parameterNames.length > 0) {
