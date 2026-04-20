@@ -135,12 +135,12 @@ public class SpelInjectionSecurityTest {
     // =====================================================
 
     /**
-     * 构建与 ActionAuditAspect 修复后一致的 SimpleEvaluationContext (forReadWriteDataBinding + DataBindingMethodResolver)。
-     * 允许变量引用、属性读写和实例方法调用，但禁用 T()、new、静态方法和反射链。
+     * 构建与 ActionAuditAspect 修复后一致的 SimpleEvaluationContext (forReadOnlyDataBinding + DataBindingMethodResolver)。
+     * 允许变量引用、属性读和实例方法调用，但禁用 T()、new、静态方法和反射链。
      */
     private SimpleEvaluationContext buildSafeContext() {
         SimpleEvaluationContext context = SimpleEvaluationContext
-                .forReadWriteDataBinding()
+                .forReadOnlyDataBinding()
                 .withMethodResolvers(DataBindingMethodResolver.forInstanceMethodInvocation())
                 .build();
         context.setVariable("param", "normalValue");
@@ -228,7 +228,7 @@ public class SpelInjectionSecurityTest {
     }
 
     // =====================================================
-    // 第四组：forReadWriteDataBinding 场景下的方法调用验证
+    // 第四组：forReadOnlyDataBinding 场景下的方法调用验证
     // 验证允许对象方法调用（get/非get），同时高危操作仍被阻止
     // =====================================================
 
@@ -344,10 +344,10 @@ public class SpelInjectionSecurityTest {
         assertEquals("1001", result);
     }
 
-    // --- 4.4 forReadWriteDataBinding 下高危操作仍被阻止 ---
+    // --- 4.4 forReadOnlyDataBinding 下高危操作仍被阻止 ---
 
     @Test
-    @DisplayName("[方法调用-安全] forReadWriteDataBinding 仍然拒绝 T() 类型引用")
+    @DisplayName("[方法调用-安全] forReadOnlyDataBinding 仍然拒绝 T() 类型引用")
     void testReadWriteContext_StillBlocksTypeReference() {
         SimpleEvaluationContext safeContext = buildSafeContext();
 
@@ -357,7 +357,7 @@ public class SpelInjectionSecurityTest {
     }
 
     @Test
-    @DisplayName("[方法调用-安全] forReadWriteDataBinding 仍然拒绝 new 构造器")
+    @DisplayName("[方法调用-安全] forReadOnlyDataBinding 仍然拒绝 new 构造器")
     void testReadWriteContext_StillBlocksConstructor() {
         SimpleEvaluationContext safeContext = buildSafeContext();
 
@@ -367,7 +367,7 @@ public class SpelInjectionSecurityTest {
     }
 
     @Test
-    @DisplayName("[方法调用-安全] forReadWriteDataBinding 仍然拒绝 getClass() 反射链")
+    @DisplayName("[方法调用-安全] forReadOnlyDataBinding 仍然拒绝 getClass() 反射链")
     void testReadWriteContext_StillBlocksGetClassReflection() {
         SimpleEvaluationContext safeContext = buildSafeContext();
 
@@ -378,7 +378,7 @@ public class SpelInjectionSecurityTest {
     }
 
     @Test
-    @DisplayName("[方法调用-安全] forReadWriteDataBinding 仍然拒绝通过 String.getClass() 反射")
+    @DisplayName("[方法调用-安全] forReadOnlyDataBinding 仍然拒绝通过 String.getClass() 反射")
     void testReadWriteContext_StillBlocksStringGetClassReflection() {
         SimpleEvaluationContext safeContext = buildSafeContext();
 

@@ -237,7 +237,7 @@ public class ActionAuditAspect {
         // 通过 DataBindingMethodResolver 允许实例方法调用（如 getter、业务方法），
         // 但该 resolver 会自动屏蔽对 Class 类方法（如 forName、getMethod）的调用，阻断反射链攻击。
         SimpleEvaluationContext context = SimpleEvaluationContext
-            .forReadWriteDataBinding()
+            .forReadOnlyDataBinding()
             .withMethodResolvers(DataBindingMethodResolver.forInstanceMethodInvocation())
             .build();
 
