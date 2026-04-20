@@ -10,18 +10,13 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.util.UUID;
-
 /**
- * 默认的 AuditRequestProvider 实现。可以通过继承 DefaultAuditRequestProvider 自定义 AuditRequestProvider
+ * 默认的 AuditRequestProvider 实现，无真实有效审计字段。
+ * 请通过继承DefaultAuditRequestProvider或直接实现AuditRequestProvider接口来提供相应的审计字段，
+ * 从请求中读取数据作为审计字段时，需要注意数据是否真实可信，防止客户端伪造。
  */
 @Slf4j
 public class DefaultAuditRequestProvider implements AuditRequestProvider {
-    public static final String HEADER_USERNAME = "X-Username";
-    public static final String HEADER_USER_IDENTIFY_TENANT_ID = "X-User-Identify-Tenant-Id";
-    public static final String HEADER_USER_IDENTIFY_TYPE = "X-User-Identify-Type";
-    public static final String HEADER_ACCESS_TYPE = "X-Access-Type";
-    public static final String HEADER_REQUEST_ID = "X-Request-Id";
 
     @Override
     public AuditHttpRequest getRequest() {
@@ -40,53 +35,36 @@ public class DefaultAuditRequestProvider implements AuditRequestProvider {
 
     @Override
     public String getUsername() {
-        HttpServletRequest httpServletRequest = getHttpServletRequest();
-        return httpServletRequest.getHeader(HEADER_USERNAME);
+        return "";
     }
 
     @Override
     public UserIdentifyTypeEnum getUserIdentifyType() {
-        HttpServletRequest httpServletRequest = getHttpServletRequest();
-        return UserIdentifyTypeEnum.valOf(httpServletRequest.getHeader(HEADER_USER_IDENTIFY_TYPE));
+        return UserIdentifyTypeEnum.UNKNOWN;
     }
 
     @Override
     public String getUserIdentifyTenantId() {
-        HttpServletRequest httpServletRequest = getHttpServletRequest();
-        return httpServletRequest.getHeader(HEADER_USER_IDENTIFY_TENANT_ID);
+        return "";
     }
 
     @Override
     public AccessTypeEnum getAccessType() {
-        HttpServletRequest httpServletRequest = getHttpServletRequest();
-        return AccessTypeEnum.valOf(httpServletRequest.getHeader(HEADER_ACCESS_TYPE));
+        return AccessTypeEnum.OTHER;
     }
 
     @Override
     public String getRequestId() {
-        try {
-            HttpServletRequest httpServletRequest = getHttpServletRequest();
-            return httpServletRequest.getHeader(HEADER_REQUEST_ID);
-        } catch (Throwable e) {
-            log.error("Get request id error", e);
-            return UUID.randomUUID().toString().replace("-", "");
-        }
+        return "";
     }
 
     @Override
     public String getClientIp() {
-        HttpServletRequest request = getHttpServletRequest();
-        String xff = request.getHeader("X-Forwarded-For");
-        if (xff == null) {
-            return request.getRemoteAddr();
-        } else {
-            return xff.contains(",") ? xff.split(",")[0] : xff;
-        }
+        return "";
     }
 
     @Override
     public String getUserAgent() {
-        HttpServletRequest request = getHttpServletRequest();
-        return request.getHeader("User-Agent");
+        return "";
     }
 }

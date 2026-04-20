@@ -3,7 +3,6 @@ package com.tencent.bk.audit;
 import com.tencent.bk.audit.constants.AccessTypeEnum;
 import com.tencent.bk.audit.constants.Constants;
 import com.tencent.bk.audit.constants.UserIdentifyTypeEnum;
-import com.tencent.bk.audit.exception.NotFoundException;
 import com.tencent.bk.audit.exporter.EventExporter;
 import com.tencent.bk.audit.model.*;
 import com.tencent.bk.audit.utils.json.JsonUtils;
@@ -23,11 +22,9 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -56,19 +53,23 @@ public class AuditSpringBootTest {
         Mockito.reset(eventExporter);
     }
 
+    /**
+     * 校验 DefaultAuditRequestProvider 返回的默认值在审计事件中的体现
+     */
+    private void assertDefaultProviderFields(AuditEvent auditEvent) {
+        assertEquals("", auditEvent.getUsername());
+        assertEquals(UserIdentifyTypeEnum.UNKNOWN.getValue(), auditEvent.getUserIdentifyType());
+        assertEquals("", auditEvent.getRequestId());
+        assertEquals("", auditEvent.getAccessSourceIp());
+        assertEquals("", auditEvent.getAccessUserAgent());
+        assertEquals(AccessTypeEnum.OTHER.getValue(), auditEvent.getAccessType());
+    }
+
     @Test
     @DisplayName("审计操作 - 基础测试案例1")
     public void testSimpleAudit1() throws Exception {
-        String requestId = UUID.randomUUID().toString();
         this.mockMvc.perform(
-                get("/test/audit/action/scope/biz/2/template/1")
-                        .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler")
-                        .header(DefaultAuditRequestProvider.HEADER_REQUEST_ID, requestId)
-                        .header(DefaultAuditRequestProvider.HEADER_ACCESS_TYPE, AccessTypeEnum.WEB.getValue())
-                        .header(DefaultAuditRequestProvider.HEADER_USER_IDENTIFY_TYPE,
-                                UserIdentifyTypeEnum.PERSONAL.getValue())
-                        .header("User-Agent", "Chrome")
-                        .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler"))
+                get("/test/audit/action/scope/biz/2/template/1"))
                 .andExpect(status().isOk());
 
         ArgumentCaptor<Collection<AuditEvent>> argument = ArgumentCaptor.forClass(Collection.class);
@@ -86,12 +87,7 @@ public class AuditSpringBootTest {
         assertEquals("job_template", auditEvent.getResourceTypeId());
         assertEquals("1", auditEvent.getInstanceId());
         assertEquals("job_template_1", auditEvent.getInstanceName());
-        assertEquals(requestId, auditEvent.getRequestId());
-        assertEquals("tyler", auditEvent.getUsername());
-        assertEquals(UserIdentifyTypeEnum.PERSONAL.getValue(), auditEvent.getUserIdentifyType());
-        assertNotNull(auditEvent.getAccessSourceIp());
-        assertEquals("Chrome", auditEvent.getAccessUserAgent());
-        assertEquals(AccessTypeEnum.WEB.getValue(), auditEvent.getAccessType());
+        assertDefaultProviderFields(auditEvent);
         assertEquals("View job template [job_template_1](1)", auditEvent.getContent());
         assertEquals("bk_audit_event", auditEvent.getAuditEventSignature());
         assertEquals(Constants.RESULT_CODE_SUCCESS, auditEvent.getResultCode());
@@ -105,21 +101,13 @@ public class AuditSpringBootTest {
     @Test
     @DisplayName("审计操作 - 基础测试案例2")
     public void testSimpleAudit2() throws Exception {
-        String requestId = UUID.randomUUID().toString();
         CreateJobTemplateRequest request = new CreateJobTemplateRequest();
         request.setName("test_audit_create_job_template");
         request.setDescription("test_audit_create_job_template_desc");
         MvcResult mockResult = this.mockMvc.perform(
                 post("/test/audit/action/scope/biz/2/template")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonUtils.toJson(request))
-                        .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler")
-                        .header(DefaultAuditRequestProvider.HEADER_REQUEST_ID, requestId)
-                        .header(DefaultAuditRequestProvider.HEADER_ACCESS_TYPE, AccessTypeEnum.WEB.getValue())
-                        .header(DefaultAuditRequestProvider.HEADER_USER_IDENTIFY_TYPE,
-                                UserIdentifyTypeEnum.PERSONAL.getValue())
-                        .header("User-Agent", "Chrome")
-                        .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler"))
+                        .content(JsonUtils.toJson(request)))
                 .andExpect(status().isOk())
                 .andReturn();
         JobTemplate createdJobTemplate = JsonUtils.fromJson(
@@ -140,12 +128,7 @@ public class AuditSpringBootTest {
         assertEquals("job_template", auditEvent.getResourceTypeId());
         assertEquals(String.valueOf(createdJobTemplate.getId()), auditEvent.getInstanceId());
         assertEquals("test_audit_create_job_template", auditEvent.getInstanceName());
-        assertEquals(requestId, auditEvent.getRequestId());
-        assertEquals("tyler", auditEvent.getUsername());
-        assertEquals(UserIdentifyTypeEnum.PERSONAL.getValue(), auditEvent.getUserIdentifyType());
-        assertNotNull(auditEvent.getAccessSourceIp());
-        assertEquals("Chrome", auditEvent.getAccessUserAgent());
-        assertEquals(AccessTypeEnum.WEB.getValue(), auditEvent.getAccessType());
+        assertDefaultProviderFields(auditEvent);
         assertEquals(
                 "Create job template [test_audit_create_job_template](" + createdJobTemplate.getId() + ")",
                 auditEvent.getContent());
@@ -156,25 +139,15 @@ public class AuditSpringBootTest {
         assertNotNull(auditEvent.getEndTime());
         assertEquals("biz", auditEvent.getScopeType());
         assertEquals("2", auditEvent.getScopeId());
-
-
     }
 
 
     @Test
     @DisplayName("审计操作 - 测试一次请求包含多个操作")
     public void testAuditMultiAction() throws Exception {
-        String requestId = UUID.randomUUID().toString();
         this.mockMvc.perform(
                 delete("/test/audit/action/scope/biz/2/template/1000")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler")
-                        .header(DefaultAuditRequestProvider.HEADER_REQUEST_ID, requestId)
-                        .header(DefaultAuditRequestProvider.HEADER_ACCESS_TYPE, AccessTypeEnum.WEB.getValue())
-                        .header(DefaultAuditRequestProvider.HEADER_USER_IDENTIFY_TYPE,
-                                UserIdentifyTypeEnum.PERSONAL.getValue())
-                        .header("User-Agent", "Chrome")
-                        .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler"))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -218,12 +191,7 @@ public class AuditSpringBootTest {
             assertEquals(Constants.RESULT_SUCCESS_DESC, auditEvent.getResultContent());
             assertNotNull(auditEvent.getStartTime());
             assertNotNull(auditEvent.getEndTime());
-            assertEquals(requestId, auditEvent.getRequestId());
-            assertEquals("tyler", auditEvent.getUsername());
-            assertEquals(UserIdentifyTypeEnum.PERSONAL.getValue(), auditEvent.getUserIdentifyType());
-            assertNotNull(auditEvent.getAccessSourceIp());
-            assertEquals("Chrome", auditEvent.getAccessUserAgent());
-            assertEquals(AccessTypeEnum.WEB.getValue(), auditEvent.getAccessType());
+            assertDefaultProviderFields(auditEvent);
             assertEquals("biz", auditEvent.getScopeType());
             assertEquals("2", auditEvent.getScopeId());
         });
@@ -232,7 +200,6 @@ public class AuditSpringBootTest {
     @Test
     @DisplayName("审计操作 - 测试自定义审计事件生成")
     public void testCustomAuditEventBuilder() throws Exception {
-        String requestId = UUID.randomUUID().toString();
         ExecuteScriptRequest request = new ExecuteScriptRequest();
         request.setScriptId(1000L);
         List<Host> hosts = new ArrayList<>(2);
@@ -242,14 +209,7 @@ public class AuditSpringBootTest {
         this.mockMvc.perform(
                 post("/test/audit/action/executeScript")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonUtils.toJson(request))
-                        .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler")
-                        .header(DefaultAuditRequestProvider.HEADER_REQUEST_ID, requestId)
-                        .header(DefaultAuditRequestProvider.HEADER_ACCESS_TYPE, AccessTypeEnum.WEB.getValue())
-                        .header(DefaultAuditRequestProvider.HEADER_USER_IDENTIFY_TYPE,
-                                UserIdentifyTypeEnum.PERSONAL.getValue())
-                        .header("User-Agent", "Chrome")
-                        .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler"))
+                        .content(JsonUtils.toJson(request)))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -268,12 +228,7 @@ public class AuditSpringBootTest {
         assertEquals("host", auditEvent.getResourceTypeId());
         assertEquals("1,2", auditEvent.getInstanceId());
         assertEquals("127.0.0.1,127.0.0.2", auditEvent.getInstanceName());
-        assertEquals(requestId, auditEvent.getRequestId());
-        assertEquals("tyler", auditEvent.getUsername());
-        assertEquals(UserIdentifyTypeEnum.PERSONAL.getValue(), auditEvent.getUserIdentifyType());
-        assertNotNull(auditEvent.getAccessSourceIp());
-        assertEquals("Chrome", auditEvent.getAccessUserAgent());
-        assertEquals(AccessTypeEnum.WEB.getValue(), auditEvent.getAccessType());
+        assertDefaultProviderFields(auditEvent);
         assertEquals("Execute script [script_1000](1000)", auditEvent.getContent());
         assertEquals("bk_audit_event", auditEvent.getAuditEventSignature());
         assertEquals(Constants.RESULT_CODE_SUCCESS, auditEvent.getResultCode());
@@ -285,16 +240,8 @@ public class AuditSpringBootTest {
     @Test
     @DisplayName("测试 AuditPostFilter 自动注册并生效")
     public void testAuditPostFilter() throws Exception {
-        String requestId = UUID.randomUUID().toString();
         this.mockMvc.perform(
-                get("/test/audit/action/scope/biz/2/template/1")
-                        .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler")
-                        .header(DefaultAuditRequestProvider.HEADER_REQUEST_ID, requestId)
-                        .header(DefaultAuditRequestProvider.HEADER_ACCESS_TYPE, AccessTypeEnum.WEB.getValue())
-                        .header(DefaultAuditRequestProvider.HEADER_USER_IDENTIFY_TYPE,
-                                UserIdentifyTypeEnum.PERSONAL.getValue())
-                        .header("User-Agent", "Chrome")
-                        .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler"))
+                get("/test/audit/action/scope/biz/2/template/1"))
                 .andExpect(status().isOk());
 
         ArgumentCaptor<Collection<AuditEvent>> argument = ArgumentCaptor.forClass(Collection.class);
@@ -312,12 +259,7 @@ public class AuditSpringBootTest {
         assertEquals("job_template", auditEvent.getResourceTypeId());
         assertEquals("1", auditEvent.getInstanceId());
         assertEquals("job_template_1", auditEvent.getInstanceName());
-        assertEquals(requestId, auditEvent.getRequestId());
-        assertEquals("tyler", auditEvent.getUsername());
-        assertEquals(UserIdentifyTypeEnum.PERSONAL.getValue(), auditEvent.getUserIdentifyType());
-        assertNotNull(auditEvent.getAccessSourceIp());
-        assertEquals("Chrome", auditEvent.getAccessUserAgent());
-        assertEquals(AccessTypeEnum.WEB.getValue(), auditEvent.getAccessType());
+        assertDefaultProviderFields(auditEvent);
         assertEquals("View job template [job_template_1](1)", auditEvent.getContent());
         assertEquals("bk_audit_event", auditEvent.getAuditEventSignature());
         assertEquals(Constants.RESULT_CODE_SUCCESS, auditEvent.getResultCode());
@@ -330,19 +272,13 @@ public class AuditSpringBootTest {
 
     @Test
     @DisplayName("审计操作 - 测试业务异常不会被审计框架捕获")
-    public void testDoNotCatchBusinessException() {
-        String requestId = UUID.randomUUID().toString();
-        assertThatThrownBy(() -> {
-            this.mockMvc.perform(
-                    //  传入 templateId=0, 触发业务的 NotFoundException
-                    get("/test/audit/action/scope/biz/2/template/0")
-                            .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler")
-                            .header(DefaultAuditRequestProvider.HEADER_REQUEST_ID, requestId)
-                            .header(DefaultAuditRequestProvider.HEADER_ACCESS_TYPE, AccessTypeEnum.WEB.getValue())
-                            .header(DefaultAuditRequestProvider.HEADER_USER_IDENTIFY_TYPE,
-                                    UserIdentifyTypeEnum.PERSONAL.getValue())
-                            .header("User-Agent", "Chrome")
-                            .header(DefaultAuditRequestProvider.HEADER_USERNAME, "tyler"));
-        }).getCause().isInstanceOf(NotFoundException.class);
+    public void testDoNotCatchBusinessException() throws Exception {
+        // 传入 templateId=0, 触发业务的 NotFoundException，由 ExceptionControllerAdvise 处理返回 404
+        this.mockMvc.perform(
+                get("/test/audit/action/scope/biz/2/template/0"))
+                .andExpect(status().isNotFound());
+
+        // 业务异常场景下，审计框架导出异常审计事件
+        verify(eventExporter).export(anyList());
     }
 }

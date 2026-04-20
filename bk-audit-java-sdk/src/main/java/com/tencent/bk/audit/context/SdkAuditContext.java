@@ -170,7 +170,7 @@ public class SdkAuditContext implements AuditContext {
 
         auditEvent.setUsername(username);
         if (userIdentifyType != null) {
-            auditEvent.setUserIdentifyType(UserIdentifyTypeEnum.PERSONAL.getValue());
+            auditEvent.setUserIdentifyType(userIdentifyType.getValue());
         }
         auditEvent.setUserIdentifyTenantId(userIdentifyTenantId);
 
