@@ -20,7 +20,7 @@ ext {
     commonsCollectionsVersion = "3.2.2"
     commonsCollections4Version = "4.4"
     junitVersion = "5.10.2"
-    assertjVersion = "3.21.0"
+    assertjVersion = "3.27.7"
     lombokVersion = "1.18.24"
     mockitoVersion = "5.14.2"
     hamcrestVersion = "2.2"
